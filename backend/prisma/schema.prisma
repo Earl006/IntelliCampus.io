@@ -22,9 +22,10 @@ model User {
   updatedAt       DateTime  @updatedAt
   resetCode       String?
   resetCodeExpiry     DateTime?
+  instructorStatus RequestStatus @default(NOT_REQUESTED)
+  isActive        Boolean   @default(true)
   instructor      Instructor?
-  learner         Learner?
-  admin           Admin?
+  enrollments     Enrollment[]
 }
 
 model Instructor {
@@ -35,20 +36,6 @@ model Instructor {
   courses         Course[]
   cohorts         Cohort[]
   earnings        Float     @default(0)
-  requestStatus   RequestStatus @default(PENDING)
-}
-
-model Learner {
-  id              String    @id @default(uuid())
-  userId          String    @unique
-  user            User      @relation(fields: [userId], references: [id])
-  enrollments     Enrollment[]
-}
-
-model Admin {
-  id              String    @id @default(uuid())
-  userId          String    @unique
-  user            User      @relation(fields: [userId], references: [id])
 }
 
 model Course {
@@ -90,8 +77,8 @@ model CourseMaterial {
 
 model Enrollment {
   id              String    @id @default(uuid())
-  learnerId       String
-  learner         Learner   @relation(fields: [learnerId], references: [id])
+  userId          String
+  learner         User   @relation(fields: [userId], references: [id])
   courseId        String
   course          Course    @relation(fields: [courseId], references: [id])
   enrolledAt      DateTime  @default(now())
@@ -176,6 +163,7 @@ enum RequestStatus {
   PENDING
   APPROVED
   REJECTED
+  NOT_REQUESTED
 }
 
 enum MaterialType {
