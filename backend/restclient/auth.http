@@ -1,0 +1,38 @@
+###Register a new user
+POST http://localhost:3000/api/auth/register
+Content-Type: application/json
+    
+    {
+        "firstName": "Earljoe",
+        "lastName": "Kadima",
+        "email": "earljoe06@gmail.com",
+        "password": "password",
+        "phoneNumber": "07112245853"
+    }
+    
+###Login a user
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+    {
+        "email": "earljoe06@gmail.com",
+        "password": "password"
+    }
+
+###Request a password reset
+POST http://localhost:3000/api/auth/request-password-reset
+Content-Type: application/json
+
+{
+    "email": "earljoe06@gmail.com"
+}
+
+###Reset password
+POST http://localhost:3000/api/auth/reset-password
+Content-Type: application/json
+
+{
+    "resetCode":"1267",
+    "newPassword": "password"
+}
+

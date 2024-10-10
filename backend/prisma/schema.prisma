@@ -1,0 +1,197 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String    @id @default(uuid())
+  email           String    @unique
+  password        String
+  firstName       String
+  lastName        String
+  phoneNumber     String    @unique
+  role            Role      @default(LEARNER)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  resetCode       String?
+  resetCodeExpiry     DateTime?
+  instructor      Instructor?
+  learner         Learner?
+  admin           Admin?
+}
+
+model Instructor {
+  id              String    @id @default(uuid())
+  userId          String    @unique
+  user            User      @relation(fields: [userId], references: [id])
+  bio             String?
+  courses         Course[]
+  cohorts         Cohort[]
+  earnings        Float     @default(0)
+  requestStatus   RequestStatus @default(PENDING)
+}
+
+model Learner {
+  id              String    @id @default(uuid())
+  userId          String    @unique
+  user            User      @relation(fields: [userId], references: [id])
+  enrollments     Enrollment[]
+}
+
+model Admin {
+  id              String    @id @default(uuid())
+  userId          String    @unique
+  user            User      @relation(fields: [userId], references: [id])
+}
+
+model Course {
+  id              String    @id @default(uuid())
+  title           String
+  description     String
+  instructorId    String
+  instructor      Instructor @relation(fields: [instructorId], references: [id])
+  price           Float     @default(0)
+  isPaid          Boolean   @default(false)
+  isPublished     Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  categories      Category[]
+  materials       CourseMaterial[]
+  enrollments     Enrollment[]
+  cohorts         Cohort[]
+  reviews         Review[]
+}
+
+model Category {
+  id              String    @id @default(uuid())
+  name            String    @unique
+  courses         Course[]
+}
+
+model CourseMaterial {
+  id              String    @id @default(uuid())
+  courseId        String
+  course          Course    @relation(fields: [courseId], references: [id])
+  title           String
+  type            MaterialType
+  content         String
+  downloadable    Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  comments        Comment[]
+}
+
+model Enrollment {
+  id              String    @id @default(uuid())
+  learnerId       String
+  learner         Learner   @relation(fields: [learnerId], references: [id])
+  courseId        String
+  course          Course    @relation(fields: [courseId], references: [id])
+  enrolledAt      DateTime  @default(now())
+  progress        Float     @default(0)
+  completed       Boolean   @default(false)
+  cohortId        String?
+  cohort          Cohort?   @relation(fields: [cohortId], references: [id])
+}
+
+model Cohort {
+  id              String    @id @default(uuid())
+  name            String
+  courseId        String
+  course          Course    @relation(fields: [courseId], references: [id])
+  instructorId    String
+  instructor      Instructor @relation(fields: [instructorId], references: [id])
+  startDate       DateTime
+  endDate         DateTime?
+  enrollments     Enrollment[]
+  chatRooms       ChatRoom[]
+}
+
+model ChatRoom {
+  id              String    @id @default(uuid())
+  cohortId        String
+  cohort          Cohort    @relation(fields: [cohortId], references: [id])
+  messages        ChatMessage[]
+}
+
+model ChatMessage {
+  id              String    @id @default(uuid())
+  chatRoomId      String
+  chatRoom        ChatRoom  @relation(fields: [chatRoomId], references: [id])
+  senderId        String
+  content         String
+  sentAt          DateTime  @default(now())
+}
+
+model Review {
+  id              String    @id @default(uuid())
+  courseId        String
+  course          Course    @relation(fields: [courseId], references: [id])
+  learnerId       String
+  rating          Int
+  comment         String?
+  createdAt       DateTime  @default(now())
+}
+
+model Comment {
+  id              String    @id @default(uuid())
+  materialId      String
+  material        CourseMaterial @relation(fields: [materialId], references: [id])
+  userId          String
+  content         String
+  createdAt       DateTime  @default(now())
+}
+
+model Payment {
+  id              String    @id @default(uuid())
+  amount          Float
+  status          PaymentStatus
+  learnerId       String
+  courseId        String
+  createdAt       DateTime  @default(now())
+}
+
+model Payout {
+  id              String    @id @default(uuid())
+  amount          Float
+  status          PayoutStatus
+  instructorId    String
+  createdAt       DateTime  @default(now())
+}
+
+enum Role {
+  ADMIN
+  INSTRUCTOR
+  LEARNER
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum MaterialType {
+  VIDEO
+  DOCUMENT
+  QUIZ
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+enum PayoutStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
