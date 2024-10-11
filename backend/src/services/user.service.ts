@@ -1,4 +1,4 @@
-import { PrismaClient, User, Role, Instructor } from "@prisma/client";
+import { PrismaClient, User, Role } from "@prisma/client";
 import bycryptjs from "bcryptjs";
 import path from "path";
 import sendMail from "../bg-services/email.servcie";
@@ -159,7 +159,7 @@ export default class UserService {
       },
     });
   }
-  async approveInstructorRequests(id: string): Promise<(User & { instructor: Instructor }) | null> {
+  async approveInstructorRequests(id: string): Promise<User | null> {
     const templatePath = path.join(__dirname, "../mails/approve-request.mail.ejs");
     const user = await prisma.user.findUnique({
       where: {
@@ -178,22 +178,15 @@ export default class UserService {
       template: templatePath,
       body,
     });
-     const updatedUser = await prisma.user.update({
+     return prisma.user.update({
       where: {
         id,
       },
       data: {
-        instructorStatus: "APPROVED"
+        instructorStatus: "APPROVED",
+        role: "INSTRUCTOR",
       }
     });
-    const instructor= await prisma.instructor.create({
-      data: {
-        id: uuidv4(),
-        userId: user.id,
-      },
-    });
-
-    return { ...updatedUser, instructor } as User & { instructor: Instructor };
     
   }
 
@@ -237,21 +230,16 @@ export default class UserService {
         });
     }
 
-    async getInstructorByUserId(userId: string): Promise<Instructor | null> {
-        return prisma.instructor.findUnique({
+    async getInstructorByUserId(userId: string): Promise<User | null> {
+        return prisma.user.findUnique({
         where: {
-            userId,
+            id: userId,
+            role: "INSTRUCTOR",
         },
         });
     }
     
-    async getInstructorById(id: string): Promise<Instructor | null> {
-        return prisma.instructor.findUnique({
-        where: {
-            id,
-        },
-        });
-    }
+   
 }
 
 

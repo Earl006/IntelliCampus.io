@@ -132,16 +132,6 @@ export default class UserController {
     }
   }
 
-  async getInstructorById(req: Request, res:Response){
-    try{
-        const instructor = await userService.getInstructorById(req.params.id);
-        res.status(200).json(instructor);
-
-    }catch(error: any){
-        res.status(400).json({ message: error.message || error });
-    }
-  }
-
   async getInstructorByUserId(req: Request, res:Response){
     try{
         const instructor = await userService.getInstructorByUserId(req.params.userId);

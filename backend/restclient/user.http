@@ -52,9 +52,6 @@ GET http://localhost:3000/api/users/instructors/requests
 ###GET INSTRUCTOR BY USER ID
 GET http://localhost:3000/api/users/instructors/user/f3d2e13d-56d2-4364-afbf-b6e880e42236
 
-###GET INSTRUCTOR BY ID
-GET http://localhost:3000/api/users/instructors/2c560494-11f0-4f5a-96ff-b5b07aee54c2
-
 ###REQUEST INSTRUCTOR ACCOUNT
 POST http://localhost:3000/api/users/request-instructor/f3d2e13d-56d2-4364-afbf-b6e880e42236
 

@@ -1,5 +1,4 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// This is your updated Prisma schema file
 
 generator client {
   provider = "prisma-client-js"
@@ -11,31 +10,27 @@ datasource db {
 }
 
 model User {
-  id              String    @id @default(uuid())
-  email           String    @unique
-  password        String
-  firstName       String
-  lastName        String
-  phoneNumber     String    @unique
-  role            Role      @default(LEARNER)
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  resetCode       String?
-  resetCodeExpiry     DateTime?
-  instructorStatus RequestStatus @default(NOT_REQUESTED)
-  isActive        Boolean   @default(true)
-  instructor      Instructor?
-  enrollments     Enrollment[]
-}
-
-model Instructor {
-  id              String    @id @default(uuid())
-  userId          String    @unique
-  user            User      @relation(fields: [userId], references: [id])
-  bio             String?
-  courses         Course[]
-  cohorts         Cohort[]
-  earnings        Float     @default(0)
+  id                String         @id @default(uuid())
+  email             String         @unique
+  password          String
+  firstName         String
+  lastName          String
+  phoneNumber       String         @unique
+  role              Role           @default(LEARNER)
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  resetCode         String?
+  resetCodeExpiry   DateTime?
+  instructorStatus  RequestStatus  @default(NOT_REQUESTED)
+  isActive          Boolean        @default(true)
+  bio               String?
+  earnings          Float          @default(0)
+  coursesCreated    Course[]       @relation("InstructorCourses")
+  cohortsManaged    Cohort[]       @relation("InstructorCohorts")
+  enrollments       Enrollment[]
+  reviews           Review[]
+  comments          Comment[]
+  chatMessages      ChatMessage[]
 }
 
 model Course {
@@ -43,7 +38,7 @@ model Course {
   title           String
   description     String
   instructorId    String
-  instructor      Instructor @relation(fields: [instructorId], references: [id])
+  instructor      User      @relation("InstructorCourses", fields: [instructorId], references: [id])
   price           Float     @default(0)
   isPaid          Boolean   @default(false)
   isPublished     Boolean   @default(false)
@@ -78,7 +73,7 @@ model CourseMaterial {
 model Enrollment {
   id              String    @id @default(uuid())
   userId          String
-  learner         User   @relation(fields: [userId], references: [id])
+  user            User      @relation(fields: [userId], references: [id])
   courseId        String
   course          Course    @relation(fields: [courseId], references: [id])
   enrolledAt      DateTime  @default(now())
@@ -94,7 +89,7 @@ model Cohort {
   courseId        String
   course          Course    @relation(fields: [courseId], references: [id])
   instructorId    String
-  instructor      Instructor @relation(fields: [instructorId], references: [id])
+  instructor      User      @relation("InstructorCohorts", fields: [instructorId], references: [id])
   startDate       DateTime
   endDate         DateTime?
   enrollments     Enrollment[]
@@ -113,6 +108,7 @@ model ChatMessage {
   chatRoomId      String
   chatRoom        ChatRoom  @relation(fields: [chatRoomId], references: [id])
   senderId        String
+  sender          User      @relation(fields: [senderId], references: [id])
   content         String
   sentAt          DateTime  @default(now())
 }
@@ -121,7 +117,8 @@ model Review {
   id              String    @id @default(uuid())
   courseId        String
   course          Course    @relation(fields: [courseId], references: [id])
-  learnerId       String
+  userId          String
+  user            User      @relation(fields: [userId], references: [id])
   rating          Int
   comment         String?
   createdAt       DateTime  @default(now())
@@ -132,6 +129,7 @@ model Comment {
   materialId      String
   material        CourseMaterial @relation(fields: [materialId], references: [id])
   userId          String
+  user            User      @relation(fields: [userId], references: [id])
   content         String
   createdAt       DateTime  @default(now())
 }
@@ -140,7 +138,7 @@ model Payment {
   id              String    @id @default(uuid())
   amount          Float
   status          PaymentStatus
-  learnerId       String
+  userId          String
   courseId        String
   createdAt       DateTime  @default(now())
 }
@@ -149,7 +147,7 @@ model Payout {
   id              String    @id @default(uuid())
   amount          Float
   status          PayoutStatus
-  instructorId    String
+  userId          String
   createdAt       DateTime  @default(now())
 }
 

@@ -21,7 +21,6 @@ router.put("/activate/:id", userController.ActivateAccount);
 // Instructor-related routes
 router.get("/instructors/requests", userController.getInstructorRequests);
 router.get("/instructors/user/:userId", userController.getInstructorByUserId);
-router.get("/instructors/:id", userController.getInstructorById);
 router.post("/request-instructor/:id", userController.requestInstructorRole);
 router.post("/approve-instructor/:id", userController.approveInstructorRequests);
 router.post("/reject-instructor/:id", userController.rejectInstructorRequests);
