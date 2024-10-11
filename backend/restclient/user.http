@@ -1,0 +1,76 @@
+###Get all users
+GET http://localhost:3000/api/users/
+
+###GET ACTIVE USERS
+GET http://localhost:3000/api/users/active
+
+###GET INACTIVE USERS
+GET http://localhost:3000/api/users/inactive
+
+###GET USER BY EMAIL
+GET http://localhost:3000/api/users/email/earljoe06@outlook.com
+
+###GET USER BY ID
+GET http://localhost:3000/api/users/f3d2e13d-56d2-4364-afbf-b6e880e42236
+
+###GET USER BY PHONE NUMBER
+GET http://localhost:3000/api/users/phone/0112272250
+
+###GET USERS BY ROLE
+GET http://localhost:3000/api/users/role/LEARNER
+
+###CHANGE PASSWORD
+PUT http://localhost:3000/api/users/password/f3d2e13d-56d2-4364-afbf-b6e880e42236
+Content-Type: application/json
+
+{
+    "newPassword": "password"
+}
+
+###UPDATE  USER PROFILE
+PUT http://localhost:3000/api/users/profile/f3d2e13d-56d2-4364-afbf-b6e880e42236
+Content-Type: application/json
+    
+    {
+        "firstName": "Andrew",
+        "lastName": "Kamau",
+        "email": "earljoe@gmail.com"
+    }
+
+###DELETE USER ACCOUNT
+DELETE http://localhost:3000/api/users/account/f3d2e13d-56d2-4364-afbf-b6e880e42236
+
+###DEACTIVATE USER ACCOUNT
+PUT  http://localhost:3000/api/users/deactivate/f3d2e13d-56d2-4364-afbf-b6e880e42236
+
+###ACTIVATE USER ACCOUNT
+PUT http://localhost:3000/api/users/activate/f3d2e13d-56d2-4364-afbf-b6e880e42236
+
+###GET INSTRUCTOR REQUESTS
+GET http://localhost:3000/api/users/instructors/requests
+
+###GET INSTRUCTOR BY USER ID
+GET http://localhost:3000/api/users/instructors/user/f3d2e13d-56d2-4364-afbf-b6e880e42236
+
+###GET INSTRUCTOR BY ID
+GET http://localhost:3000/api/users/instructors/2c560494-11f0-4f5a-96ff-b5b07aee54c2
+
+###REQUEST INSTRUCTOR ACCOUNT
+POST http://localhost:3000/api/users/request-instructor/f3d2e13d-56d2-4364-afbf-b6e880e42236
+
+###APPROVE INSTRUCTOR ACCOUNT
+POST  http://localhost:3000/api/users/approve-instructor/f3d2e13d-56d2-4364-afbf-b6e880e42236
+
+###REJECT INSTRUCTOR ACCOUNT
+POST  http://localhost:3000/api/users/reject-instructor/f3d2e13d-56d2-4364-afbf-b6e880e42236
+
+###CHANGE USER ROLE
+POST  http://localhost:3000/api/users/assign-role/f3d2e13d-56d2-4364-afbf-b6e880e42236
+Content-Type: application/json
+
+{
+    "role": "LEARNER"
+}
+
+
+

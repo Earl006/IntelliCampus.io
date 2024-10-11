@@ -41,7 +41,7 @@ export default class AuthService {
     }
     await sendMail({
         email: user.email,
-        subject: "Welcome to our IntelliCampus",
+        subject: "Welcome to IntelliCampus",
         template: templatePath,
         body,
     })
@@ -55,9 +55,17 @@ export default class AuthService {
             email: data.email,
         },
     });
+  
     if (!user) {
         throw new Error("User account doesn't exist. Please create an account and try again");
     }
+
+    const isInactive = user.isActive === false;
+
+    if (isInactive) {
+        throw new Error("Your account has been deactivated. Please contact the support at support@intellicampus.com");
+    }
+   
     const isPasswordValid = await bycryptjs.compare(data.password, user.password);
     if (!isPasswordValid) {
         throw new Error("Invalid email or password");
