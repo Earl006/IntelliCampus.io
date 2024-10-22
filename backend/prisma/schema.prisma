@@ -49,6 +49,7 @@ model Course {
   enrollments     Enrollment[]
   cohorts         Cohort[]
   reviews         Review[]
+  chatRooms       CourseChatRoom[]
 }
 
 model Category {
@@ -93,10 +94,17 @@ model Cohort {
   startDate       DateTime
   endDate         DateTime?
   enrollments     Enrollment[]
-  chatRooms       ChatRoom[]
+  chatRooms       CohortChatRoom[]
 }
 
-model ChatRoom {
+model CourseChatRoom {
+  id              String    @id @default(uuid())
+  courseId        String
+  course          Course    @relation(fields: [courseId], references: [id])
+  messages        ChatMessage[]
+}
+
+model CohortChatRoom {
   id              String    @id @default(uuid())
   cohortId        String
   cohort          Cohort    @relation(fields: [cohortId], references: [id])
@@ -105,13 +113,16 @@ model ChatRoom {
 
 model ChatMessage {
   id              String    @id @default(uuid())
-  chatRoomId      String
-  chatRoom        ChatRoom  @relation(fields: [chatRoomId], references: [id])
+  courseChatRoomId String?
+  courseChatRoom  CourseChatRoom? @relation(fields: [courseChatRoomId], references: [id])
+  cohortChatRoomId String?
+  cohortChatRoom  CohortChatRoom? @relation(fields: [cohortChatRoomId], references: [id])
   senderId        String
   sender          User      @relation(fields: [senderId], references: [id])
   content         String
   sentAt          DateTime  @default(now())
 }
+
 
 model Review {
   id              String    @id @default(uuid())
