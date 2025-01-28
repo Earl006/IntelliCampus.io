@@ -1,5 +1,3 @@
-// This is your updated Prisma schema file
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -25,26 +23,33 @@ model User {
   isActive          Boolean        @default(true)
   bio               String?
   earnings          Float          @default(0)
+
+  // Relations
   coursesCreated    Course[]       @relation("InstructorCourses")
   cohortsManaged    Cohort[]       @relation("InstructorCohorts")
   enrollments       Enrollment[]
   reviews           Review[]
   comments          Comment[]
   chatMessages      ChatMessage[]
+
 }
 
 model Course {
-  id              String    @id @default(uuid())
+  id              String          @id @default(uuid())
   title           String
   description     String
   instructorId    String
-  instructor      User      @relation("InstructorCourses", fields: [instructorId], references: [id])
-  price           Float     @default(0)
-  isPaid          Boolean   @default(false)
-  isPublished     Boolean   @default(false)
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  instructor      User            @relation("InstructorCourses", fields: [instructorId], references: [id])
+  price           Float           @default(0)
+  isPaid          Boolean         @default(false)
+  isPublished     Boolean         @default(false)
+  bannerImageUrl  String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  // Relations
   categories      Category[]
+  subCategories   SubCategory[]   @relation("SubCategoriesOnCourses")
   materials       CourseMaterial[]
   enrollments     Enrollment[]
   cohorts         Cohort[]
@@ -53,113 +58,128 @@ model Course {
 }
 
 model Category {
-  id              String    @id @default(uuid())
-  name            String    @unique
-  courses         Course[]
+  id         String     @id @default(uuid())
+  name       String     @unique
+  courses    Course[]
+  // optional: subcategories if you choose a nested arrangement
+  subCategories SubCategory[]
+}
+
+model SubCategory {
+  id         String     @id @default(uuid())
+  name       String     @unique
+  categoryId String?
+  category   Category?  @relation(fields: [categoryId], references: [id])
+
+  courses    Course[]   @relation("SubCategoriesOnCourses")
 }
 
 model CourseMaterial {
-  id              String    @id @default(uuid())
-  courseId        String
-  course          Course    @relation(fields: [courseId], references: [id])
-  title           String
-  type            MaterialType
-  content         String
-  downloadable    Boolean   @default(false)
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  comments        Comment[]
+  id            String       @id @default(uuid())
+  courseId      String
+  course        Course       @relation(fields: [courseId], references: [id])
+  title         String
+  type          MaterialType
+  content       String
+  downloadable  Boolean      @default(false)
+  week          Int?
+  day           Int?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  comments      Comment[]
 }
 
 model Enrollment {
-  id              String    @id @default(uuid())
-  userId          String
-  user            User      @relation(fields: [userId], references: [id])
-  courseId        String
-  course          Course    @relation(fields: [courseId], references: [id])
-  enrolledAt      DateTime  @default(now())
-  progress        Float     @default(0)
-  completed       Boolean   @default(false)
-  cohortId        String?
-  cohort          Cohort?   @relation(fields: [cohortId], references: [id])
+  id          String     @id @default(uuid())
+  userId      String
+  user        User       @relation(fields: [userId], references: [id])
+  courseId    String
+  course      Course     @relation(fields: [courseId], references: [id])
+  enrolledAt  DateTime   @default(now())
+  progress    Float      @default(0)
+  completed   Boolean    @default(false)
+  cohortId    String?
+  cohort      Cohort?    @relation(fields: [cohortId], references: [id])
 }
 
 model Cohort {
-  id              String    @id @default(uuid())
-  name            String
-  courseId        String
-  course          Course    @relation(fields: [courseId], references: [id])
-  instructorId    String
-  instructor      User      @relation("InstructorCohorts", fields: [instructorId], references: [id])
-  startDate       DateTime
-  endDate         DateTime?
-  enrollments     Enrollment[]
-  chatRooms       CohortChatRoom[]
+  id            String          @id @default(uuid())
+  name          String
+  courseId      String
+  course        Course          @relation(fields: [courseId], references: [id])
+  instructorId  String
+  instructor    User            @relation("InstructorCohorts", fields: [instructorId], references: [id])
+  startDate     DateTime
+  endDate       DateTime?
+  isCompleted   Boolean         @default(false)
+
+  enrollments   Enrollment[]
+  chatRooms     CohortChatRoom[]
 }
 
 model CourseChatRoom {
-  id              String    @id @default(uuid())
-  courseId        String
-  course          Course    @relation(fields: [courseId], references: [id])
-  messages        ChatMessage[]
+  id         String         @id @default(uuid())
+  courseId   String
+  course     Course         @relation(fields: [courseId], references: [id])
+  messages   ChatMessage[]
 }
 
 model CohortChatRoom {
-  id              String    @id @default(uuid())
-  cohortId        String
-  cohort          Cohort    @relation(fields: [cohortId], references: [id])
-  messages        ChatMessage[]
+  id         String         @id @default(uuid())
+  cohortId   String
+  cohort     Cohort         @relation(fields: [cohortId], references: [id])
+  messages   ChatMessage[]
 }
 
 model ChatMessage {
-  id              String    @id @default(uuid())
+  id               String           @id @default(uuid())
   courseChatRoomId String?
-  courseChatRoom  CourseChatRoom? @relation(fields: [courseChatRoomId], references: [id])
+  courseChatRoom   CourseChatRoom?  @relation(fields: [courseChatRoomId], references: [id])
   cohortChatRoomId String?
-  cohortChatRoom  CohortChatRoom? @relation(fields: [cohortChatRoomId], references: [id])
-  senderId        String
-  sender          User      @relation(fields: [senderId], references: [id])
-  content         String
-  sentAt          DateTime  @default(now())
+  cohortChatRoom   CohortChatRoom?  @relation(fields: [cohortChatRoomId], references: [id])
+  senderId         String
+  sender           User             @relation(fields: [senderId], references: [id])
+  content          String
+  sentAt           DateTime         @default(now())
 }
 
-
 model Review {
-  id              String    @id @default(uuid())
-  courseId        String
-  course          Course    @relation(fields: [courseId], references: [id])
-  userId          String
-  user            User      @relation(fields: [userId], references: [id])
-  rating          Int
-  comment         String?
-  createdAt       DateTime  @default(now())
+  id        String   @id @default(uuid())
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id])
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now())
 }
 
 model Comment {
-  id              String    @id @default(uuid())
-  materialId      String
-  material        CourseMaterial @relation(fields: [materialId], references: [id])
-  userId          String
-  user            User      @relation(fields: [userId], references: [id])
-  content         String
-  createdAt       DateTime  @default(now())
+  id         String         @id @default(uuid())
+  materialId String
+  material   CourseMaterial @relation(fields: [materialId], references: [id])
+  userId     String
+  user       User           @relation(fields: [userId], references: [id])
+  content    String
+  createdAt  DateTime       @default(now())
 }
 
 model Payment {
-  id              String    @id @default(uuid())
-  amount          Float
-  status          PaymentStatus
-  userId          String
-  courseId        String
-  createdAt       DateTime  @default(now())
+  id         String        @id @default(uuid())
+  amount     Float
+  status     PaymentStatus
+  userId     String
+  courseId   String
+  createdAt  DateTime      @default(now())
 }
 
 model Payout {
-  id              String    @id @default(uuid())
-  amount          Float
-  status          PayoutStatus
-  userId          String
-  createdAt       DateTime  @default(now())
+  id         String       @id @default(uuid())
+  amount     Float
+  status     PayoutStatus
+  userId     String
+  createdAt  DateTime     @default(now())
 }
 
 enum Role {
@@ -191,4 +211,14 @@ enum PayoutStatus {
   PENDING
   COMPLETED
   FAILED
+}
+
+// Many-to-many pivot
+// This table is automatically managed by Prisma when using the @relation("SubCategoriesOnCourses") attribute.
+model SubCategoryToCourse {
+  A String
+  B String
+
+  @@id([A, B])
+  @@index([B])
 }
