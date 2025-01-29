@@ -1,11 +1,23 @@
-import { PrismaClient, Course, Role } from "@prisma/client";
-import { Server } from "socket.io";
+import { PrismaClient, Course, Enrollment } from '@prisma/client';
+import ChatService from './chat.service';
+import { PaymentService } from './payment.service';
+import { PaymentMethod } from '../interfaces/payment';
 
-const prisma = new PrismaClient();
-const io = new Server();
+export default class CourseService {
+  private prisma: PrismaClient;
+  private chatService: ChatService;
+  private paymentService: PaymentService;
 
-class CourseService {
-  // Create a new course, optionally with bannerImageUrl, subCategoryIds, isPaid, price, etc.
+  constructor(
+    prismaClient: PrismaClient,
+    chatService: ChatService,
+    paymentService: PaymentService
+  ) {
+    this.prisma = prismaClient;
+    this.chatService = chatService;
+    this.paymentService = paymentService;
+  }
+
   async createCourse(
     title: string,
     description: string,
@@ -15,7 +27,7 @@ class CourseService {
     price?: number,
     subCategoryIds?: string[]
   ) {
-    const course = await prisma.course.create({
+    const course = await this.prisma.course.create({
       data: {
         title,
         description,
@@ -31,26 +43,20 @@ class CourseService {
       },
     });
 
-    // Create a chat room for the course
-    await prisma.courseChatRoom.create({
-      data: { courseId: course.id },
-    });
-
+    // Create associated course chat room
+    await this.chatService.createCourseChatRoom(course.id);
     return course;
   }
 
-  // CRUD for course
   async updateCourse(
     courseId: string,
     data: Partial<Course> & {
       subCategoryIds?: string[];
     }
   ) {
-    // handle subcategory updates if provided
     let subCatsConnect, subCatsDisconnect;
     if (data.subCategoryIds) {
-      // find existing subcats
-      const existing = await prisma.course.findUnique({
+      const existing = await this.prisma.course.findUnique({
         where: { id: courseId },
         select: { subCategories: true },
       });
@@ -64,7 +70,7 @@ class CourseService {
     }
 
     const { subCategoryIds, ...rest } = data;
-    const updated = await prisma.course.update({
+    return this.prisma.course.update({
       where: { id: courseId },
       data: {
         ...rest,
@@ -77,84 +83,167 @@ class CourseService {
             : undefined,
       },
     });
-    return updated;
   }
 
   async deleteCourse(courseId: string) {
-    return prisma.course.delete({ where: { id: courseId } });
+    // Cascade deletes chatRooms, enrollments, etc. as configured in schema
+    return this.prisma.course.delete({ where: { id: courseId } });
   }
 
-  // Publish or unpublish a course
   async setCoursePublishStatus(courseId: string, published: boolean) {
-    return prisma.course.update({
+    return this.prisma.course.update({
       where: { id: courseId },
       data: { isPublished: published },
     });
   }
 
-  // Create a cohort
+  /**
+   * Creates a new cohort for a course and sets up a chat room.
+   */
   async createCohort(courseId: string, instructorId: string, startDate: Date) {
-    const cohort = await prisma.cohort.create({
+    const cohort = await this.prisma.cohort.create({
       data: {
         name: `Cohort ${new Date().getMonth() + 1}`,
         courseId,
         instructorId,
         startDate,
       },
-    });
-
-    // Create a chat room for the cohort
-    await prisma.cohortChatRoom.create({
-      data: {
-        cohortId: cohort.id,
+      include: {
+        chatRooms: true,
+        course: {
+          include: {
+            chatRooms: true,
+          },
+        },
       },
     });
 
+    await this.chatService.createCohortChatRoom(cohort.id);
     return cohort;
   }
 
-  // Enroll a learner in a course
-  async enrollStudent(studentId: string, courseId: string) {
-    // Find or create a cohort that suits the student's start (simple logic here).
-    let cohort = await prisma.cohort.findFirst({
+  /**
+   * Enrolls a student in a course, optionally requiring payment if course is paid.
+   */
+  async enrollStudent(
+    studentId: string,
+    courseId: string,
+    paymentMethod?: PaymentMethod
+  ): Promise<Enrollment> {
+    const course = await this.prisma.course.findUnique({
+      where: { id: courseId },
+    });
+    if (!course) {
+      throw new Error('Course not found');
+    }
+
+    // If course is paid, handle payment first
+    if (course.isPaid) {
+      if (!paymentMethod) {
+        throw new Error('Payment method required for paid courses');
+      }
+
+      // Retrieve user data for the payment request
+      const user = await this.prisma.user.findUnique({ where: { id: studentId } });
+      if (!user) {
+        throw new Error('User not found');
+      }
+
+      const paymentResponse = await this.paymentService.initiatePayment({
+        amount: course.price,
+        courseId,
+        userId: studentId,
+        paymentMethod,
+        currency: 'KES',
+        customerEmail: user.email,
+        phoneNumber: user.phoneNumber,
+      });
+
+      // If initiatePayment fails or returns success: false
+      if (!paymentResponse.success) {
+        throw new Error('Payment failed. Please retry or use a different method.');
+      }
+
+      // Enrollment is completed only after webhook confirms payment
+      // Return the payment details for the frontend
+      throw new Error('Payment initiated. Awaiting confirmation...');
+    }
+
+    // Otherwise, free course - direct enrollment
+    return this.createEnrollment(studentId, courseId);
+  }
+
+  /**
+   * Helper method to create an enrollment + join chat rooms without payment flow.
+   */
+  private async createEnrollment(userId: string, courseId: string): Promise<Enrollment> {
+    let cohort = await this.prisma.cohort.findFirst({
       where: {
         courseId,
         isCompleted: false,
       },
+      include: {
+        chatRooms: true,
+        course: {
+          include: {
+            chatRooms: true,
+          },
+        },
+      },
     });
 
+    // If no active cohort, create one
     if (!cohort) {
-      // fallback behavior: create a new cohort if none found
-      cohort = await this.createCohort(courseId, studentId, new Date());
+      cohort = await this.createCohort(courseId, userId, new Date());
     }
 
-    const enrollment = await prisma.enrollment.create({
+    // Create enrollment
+    const enrollment = await this.prisma.enrollment.create({
       data: {
-        userId: studentId,
+        userId,
         courseId,
         cohortId: cohort.id,
       },
     });
 
-    // Add the student to the chat rooms
-    io.to(`cohort_${cohort.id}`).emit("new_student", { studentId });
-    io.to(`course_${courseId}`).emit("new_student", { studentId });
-
+    // Notify both the cohort and course rooms
+    if (cohort.chatRooms[0]) {
+      this.chatService.notifyRoomMembership(cohort.chatRooms[0].id, userId, 'joined');
+    }
+    if (cohort.course.chatRooms[0]) {
+      this.chatService.notifyRoomMembership(cohort.course.chatRooms[0].id, userId, 'joined');
+    }
     return enrollment;
   }
 
-  // Defer a student from one cohort to another
+  /**
+   * Defer a student from one cohort to another
+   */
   async deferStudent(studentId: string, currentCohortId: string, targetCohortId: string) {
-    const updated = await prisma.enrollment.updateMany({
+    const [currentCohort, targetCohort] = await Promise.all([
+      this.prisma.cohort.findUnique({
+        where: { id: currentCohortId },
+        include: { chatRooms: true },
+      }),
+      this.prisma.cohort.findUnique({
+        where: { id: targetCohortId },
+        include: { chatRooms: true },
+      }),
+    ]);
+
+    const updated = await this.prisma.enrollment.updateMany({
       where: { userId: studentId, cohortId: currentCohortId },
       data: { cohortId: targetCohortId },
     });
 
-    io.to(`cohort_${currentCohortId}`).emit("student_left", { studentId });
-    io.to(`cohort_${targetCohortId}`).emit("student_joined", { studentId });
+    // Notify chatRooms about membership change
+    if (currentCohort?.chatRooms[0]) {
+      this.chatService.notifyRoomMembership(currentCohort.chatRooms[0].id, studentId, 'left');
+    }
+    if (targetCohort?.chatRooms[0]) {
+      this.chatService.notifyRoomMembership(targetCohort.chatRooms[0].id, studentId, 'joined');
+    }
 
     return updated;
   }
 }
-
-export default new CourseService();

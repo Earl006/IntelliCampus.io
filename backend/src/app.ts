@@ -7,8 +7,8 @@ const app = express();
 const prisma = new PrismaClient();
 
 app.use(express.json());
-
 app.use('/api/auth/', authRoutes);
 app.use('/api/users/', userRoutes);
 
+export { prisma };
 export default app;
