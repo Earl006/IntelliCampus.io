@@ -1,9 +1,8 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction, RequestHandler } from 'express';
 import { Socket } from 'socket.io';
 import { verifyToken } from '../utils/jwt.utils';
 import { Role } from '@prisma/client';
 
-// Extend Express Request type to include user
 declare global {
   namespace Express {
     interface Request {
@@ -12,29 +11,38 @@ declare global {
   }
 }
 
-export const authenticateJWT = (req: Request, res: Response, next: NextFunction) => {
+export const authenticateJWT: RequestHandler = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader?.startsWith('Bearer ')) {
-    return res.status(401).json({ message: 'No token provided' });
+    res.status(401).json({ message: 'No token provided' });
+    return;
   }
 
-  const token = authHeader.split(' ')[1];
-
   try {
+    const token = authHeader.split(' ')[1];
     const decoded = verifyToken(token);
     req.user = decoded;
     next();
   } catch (error) {
-    return res.status(401).json({ message: 'Invalid or expired token' });
+    res.status(401).json({ message: 'Invalid or expired token' });
+    return;
   }
 };
 
-export const authenticateSocket = async (socket: Socket, next: (err?: Error) => void) => {
+export const authenticateSocket = async (
+  socket: Socket, 
+  next: (err?: Error) => void
+): Promise<void> => {
   const token = socket.handshake.auth.token;
 
   if (!token) {
-    return next(new Error('Authentication required'));
+    next(new Error('Authentication required'));
+    return;
   }
 
   try {
@@ -46,14 +54,16 @@ export const authenticateSocket = async (socket: Socket, next: (err?: Error) => 
   }
 };
 
-export const requireRole = (roles: Role[]) => {
-  return (req: Request, res: Response, next: NextFunction) => {
+export const requireRole = (roles: Role[]): RequestHandler => {
+  return (req: Request, res: Response, next: NextFunction): void => {
     if (!req.user) {
-      return res.status(401).json({ message: 'Authentication required' });
+      res.status(401).json({ message: 'Authentication required' });
+      return;
     }
 
     if (!roles.includes(req.user.role)) {
-      return res.status(403).json({ message: 'Insufficient permissions' });
+      res.status(403).json({ message: 'Insufficient permissions' });
+      return;
     }
 
     next();

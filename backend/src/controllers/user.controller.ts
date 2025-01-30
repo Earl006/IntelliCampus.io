@@ -7,8 +7,11 @@ const userService = new UserService();
 export default class UserController {
   async getUserById(req: Request, res: Response) {
     try {
-      const user = await userService.getUserById(req.params.id);
-      res.status(200).json(user);
+      const user = await userService.getUserById(req.user.id);
+      res.status(200).json({
+        success: true,
+        data:user
+      });
     } catch (error: any) {
       res.status(400).json({ message: error.message || error });
     }
@@ -34,8 +37,11 @@ export default class UserController {
 
   async changePassword(req: Request, res: Response) {
     try {
-      const user = await userService.changePassword(req.params.id, req.body.newPassword);
-      res.status(200).json({user, message: 'Password changed successfully'});
+      const user = await userService.changePassword(req.user.id, req.body.newPassword);
+      res.status(200).json({
+        success: true,
+        data:user, 
+        message: 'Password changed successfully'});
     } catch (error: any) {
       res.status(400).json({ message: error.message || error });
     }
@@ -43,26 +49,39 @@ export default class UserController {
 
   async updateProfile(req: Request, res: Response) {
     try {
-      const user = await userService.updateProfile(req.params.id, req.body);
-      res.status(200).json({user, message: 'Profile updated successfully'});
+      const user = await userService.updateProfile(req.user.id, req.body);
+      res.status(200).json({
+        success: true,
+        data:user, 
+        message: 'Profile updated successfully'});
     } catch (error: any) {
-      res.status(400).json({ message: error.message || error });
+      res.status(400).json({ 
+        success: false,
+        message: error.message || error });
     }
   }
 
   async approveInstructorRequests(req: Request, res: Response) {
     try {
       const user = await userService.approveInstructorRequests(req.params.id);
-      res.status(200).json({user, message: 'Instructor request approved successfully'});
+      res.status(200).json({
+          success: true,
+        data:user,
+         message: 'Instructor request approved successfully'});
     } catch (error: any) {
-      res.status(400).json({ message: error.message || error });
+      res.status(400).json({ 
+        success: false,
+        message: error.message || error });
     }
   }
 
   async rejectInstructorRequests(req: Request, res: Response) {
     try {
       const user = await userService.rejectInstructorRequests(req.params.id);
-      res.status(200).json({user, message: 'Instructor request rejected successfully'});
+      res.status(200).json({
+        success: true,
+        data:user, 
+        message: 'Instructor request rejected successfully'});
     } catch (error: any) {
       res.status(400).json({ message: error.message || error });
     }
@@ -71,27 +90,31 @@ export default class UserController {
   async getAllUsers(req: Request, res: Response) {
     try {
       const users = await userService.getAllUsers();
-      res.status(200).json(users);
+      res.status(200).json({
+        success: true,
+        data:users});
     } catch (error: any) {
-      res.status(400).json({ message: error.message || error });
+      res.status(400).json({ 
+        success: false,
+        message: error.message || error });
     }
   }
 
   async getAllActiveUsers(req: Request, res: Response) {
     try {
       const users = await userService.getAllActiveUsers();
-      res.status(200).json(users);
+      res.status(200).json({success: true ,data:users});
     } catch (error: any) {
-      res.status(400).json({ message: error.message || error });
+      res.status(400).json({ success: false,message: error.message || error });
     }
   }
 
   async getAllInactiveUsers(req: Request, res: Response) {
     try {
       const users = await userService.getAllInactiveUsers();
-      res.status(200).json(users);
+      res.status(200).json({ success: true,data:users});
     } catch (error: any) {
-      res.status(400).json({ message: error.message || error });
+      res.status(400).json({ success: false,message: error.message || error });
     }
   }
 
@@ -100,26 +123,31 @@ export default class UserController {
         
       const role = req.params.role as Role;
       const users = await userService.getAllUsersByRole(role);
-      res.status(200).json(users);
+      res.status(200).json({ success:true,data:users});
     } catch (error: any) {
-      res.status(400).json({ message: error.message || error });
+      res.status(400).json({ success:false,message: error.message || error });
     }
   }
   async requestInstructorRole(req: Request, res: Response) {
     try {
-      const user = await userService.requestInstructorRole(req.params.id);
-      res.status(200).json({user, message: 'Instructor role has been requested, pending verification by admin. You will receive an email on succesful verification '});
+      const user = await userService.requestInstructorRole(req.user.id);
+      res.status(200).json({
+        success: true,
+        data:user, 
+        message: 'Instructor role has been requested, pending verification by admin. You will receive an email on succesful verification '});
     } catch (error: any) {
-      res.status(400).json({ message: error.message || error });
+      res.status(400).json({ 
+        success: false,
+        message: error.message || error });
     }
   }
 
   async getInstructorRequests(req: Request, res: Response) {
     try {
       const users = await userService.getInstructorRequests();
-      res.status(200).json(users);
+      res.status(200).json({success:true,data:users});
     } catch (error: any) {
-      res.status(400).json({ message: error.message || error });
+      res.status(400).json({ success:false,message: error.message || error });
     }
   }
 
@@ -135,15 +163,15 @@ export default class UserController {
   async getInstructorByUserId(req: Request, res:Response){
     try{
         const instructor = await userService.getInstructorByUserId(req.params.userId);
-        res.status(200).json(instructor);
+        res.status(200).json({sucess:true, data:instructor});
     }catch(error: any){
-        res.status(400).json({ message: error.message || error });
+        res.status(400).json({ success:false,message: error.message || error });
     }
 }
 
  async deactivateAccount(req: Request, res: Response) {
     try {
-      const user = await userService.deactivateAccount(req.params.id);
+      const user = await userService.deactivateAccount(req.user.id);
       res.status(200).json({user, message: 'Account deactivated successfully'});
     } catch (error: any) {
       res.status(400).json({ message: error.message || error });
