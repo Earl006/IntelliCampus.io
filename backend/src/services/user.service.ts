@@ -184,6 +184,6 @@ export default class UserService {
       where: { id: cohortId },
       data: { isCompleted: true },
     });
-    // potentially send mails to each enrolled learner with a "certificate" or usage of your choice
+    //  send mails to each enrolled learner with a "certificate" or usage of your choice
   }
 }

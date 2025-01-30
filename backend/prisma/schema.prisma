@@ -32,6 +32,8 @@ model User {
   comments          Comment[]
   chatMessages      ChatMessage[]
 
+
+  Payout Payout[]
 }
 
 model Course {
@@ -175,11 +177,19 @@ model Payment {
 }
 
 model Payout {
-  id         String       @id @default(uuid())
-  amount     Float
-  status     PayoutStatus
-  userId     String
-  createdAt  DateTime     @default(now())
+  id           String       @id @default(uuid())
+  amount       Float
+  status       PayoutStatus
+  instructorId String      
+  instructor   User        @relation(fields: [instructorId], references: [id])
+  method       PayoutMethod
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+}
+
+enum PayoutMethod {
+  MPESA
+  PAYPAL
 }
 
 enum Role {
