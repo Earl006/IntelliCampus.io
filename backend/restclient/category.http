@@ -1,0 +1,71 @@
+@baseUrl = http://localhost:3000/api
+@categoryId = {{createCategory.response.body.data.id}}
+@subCategoryId = {{createSubCategory.response.body.data.id}}
+
+### Get admin token for protected routes
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+    "email": "admin@example.com",
+    "password": "adminpass123"
+}
+
+@authToken = {{login.response.body.token}}
+
+### Category Operations ###
+
+### List all categories
+GET {{baseUrl}}/categories
+
+### Create new category
+# @name createCategory
+POST {{baseUrl}}/categories
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "name": "Programming"
+}
+
+### Get category by ID
+GET {{baseUrl}}/categories/{{categoryId}}
+
+### Update category
+PUT {{baseUrl}}/categories/{{categoryId}}
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "name": "Updated Programming"
+}
+
+### Delete category
+DELETE {{baseUrl}}/categories/{{categoryId}}
+Authorization: Bearer {{authToken}}
+
+### Subcategory Operations ###
+
+### Create subcategory
+# @name createSubCategory
+POST {{baseUrl}}/categories/{{categoryId}}/subcategories
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "name": "Web Development"
+}
+
+### Update subcategory
+PUT {{baseUrl}}/categories/subcategories/{{subCategoryId}}
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "name": "Updated Web Development"
+}
+
+### Delete subcategory
+DELETE {{baseUrl}}/categories/subcategories/{{subCategoryId}}
+Authorization: Bearer {{authToken}}
