@@ -1,18 +1,14 @@
 @baseUrl = http://localhost:3000/api
-@categoryId = {{createCategory.response.body.data.id}}
-@subCategoryId = {{createSubCategory.response.body.data.id}}
+@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjQ2ODgwZjkzLWMzYTUtNGZmNC04YjJjLTE1MDljMDEzNmE1MiIsImVtYWlsIjoiZWFybGpvZTA2QGdtYWlsLmNvbSIsInBob25lTnVtYmVyIjoiMDcxMTIyNzIyNTAiLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3MzgzMjg2NDUsImV4cCI6MTczODMzMjI0NX0.4D6--kyKLRffL10ix0JoegZgkez9hMMHUwMJQq0RbJg
 
 ### Get admin token for protected routes
-# @name login
-POST {{baseUrl}}/auth/login
+POST http://localhost:3000/api/auth/login
 Content-Type: application/json
 
-{
-    "email": "admin@example.com",
-    "password": "adminpass123"
-}
-
-@authToken = {{login.response.body.token}}
+    {
+        "email": "earljoe06@gmail.com",
+        "password": "password"
+    }
 
 ### Category Operations ###
 
@@ -20,52 +16,50 @@ Content-Type: application/json
 GET {{baseUrl}}/categories
 
 ### Create new category
-# @name createCategory
 POST {{baseUrl}}/categories
 Authorization: Bearer {{authToken}}
 Content-Type: application/json
 
 {
-    "name": "Programming"
+    "name": "Terror"
 }
 
 ### Get category by ID
-GET {{baseUrl}}/categories/{{categoryId}}
+GET {{baseUrl}}/categories/62988085-f5fc-4030-8332-69ebf771a5c6
 
 ### Update category
-PUT {{baseUrl}}/categories/{{categoryId}}
+PUT {{baseUrl}}/categories/2bfc290f-dbb0-41aa-8141-8082597f6223
 Authorization: Bearer {{authToken}}
 Content-Type: application/json
 
 {
-    "name": "Updated Programming"
+    "name": "Health"
 }
 
 ### Delete category
-DELETE {{baseUrl}}/categories/{{categoryId}}
+DELETE {{baseUrl}}/categories/2bfc290f-dbb0-41aa-8141-8082597f6223
 Authorization: Bearer {{authToken}}
 
 ### Subcategory Operations ###
 
 ### Create subcategory
-# @name createSubCategory
-POST {{baseUrl}}/categories/{{categoryId}}/subcategories
+POST {{baseUrl}}/categories/62988085-f5fc-4030-8332-69ebf771a5c6/subcategories
 Authorization: Bearer {{authToken}}
 Content-Type: application/json
 
 {
-    "name": "Web Development"
+    "name": "Buisness"
 }
 
 ### Update subcategory
-PUT {{baseUrl}}/categories/subcategories/{{subCategoryId}}
+PUT {{baseUrl}}/categories/subcategories/7753f1b7-1f11-4671-ad9e-6b16cd757f67
 Authorization: Bearer {{authToken}}
 Content-Type: application/json
 
 {
-    "name": "Updated Web Development"
+    "name": "Software Development"
 }
 
 ### Delete subcategory
-DELETE {{baseUrl}}/categories/subcategories/{{subCategoryId}}
+DELETE {{baseUrl}}/categories/subcategories/d9044df8-5ae9-4923-8e7d-1d377a29431a
 Authorization: Bearer {{authToken}}

@@ -4,10 +4,10 @@ Content-Type: application/json
     
     {
         "firstName": "Earljoe",
-        "lastName": "Kadima",
-        "email": "earljoe06@outlook.com",
+        "lastName": "Wamukoya",
+        "email": "earljoe06@gmail.com",
         "password": "password",
-        "phoneNumber": "07112245853"
+        "phoneNumber": "07112272250"
     }
     
 ###Login a user
@@ -24,7 +24,7 @@ POST http://localhost:3000/api/auth/request-password-reset
 Content-Type: application/json
 
 {
-    "email": "earljoe06@gmail.com"
+    "email": "earljoe06@outlook.com"
 }
 
 ###Reset password
@@ -32,7 +32,7 @@ POST http://localhost:3000/api/auth/reset-password
 Content-Type: application/json
 
 {
-    "resetCode":"1267",
+    "resetCode":"8157",
     "newPassword": "password"
 }
 

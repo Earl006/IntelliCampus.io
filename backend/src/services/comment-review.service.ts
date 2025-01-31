@@ -1,13 +1,12 @@
 import { PrismaClient } from '@prisma/client';
-import { createClient } from 'redis';
+import redisClient from '../bg-services/redis.service';
 
 const prisma = new PrismaClient();
-const redisClient = createClient({
-  url: process.env.REDIS_URL || 'redis://localhost:6379',
-});
-redisClient.connect().catch(console.error);
+
 
 export default class CommentReviewService {
+
+  
   /**
    * Creates a new comment for a CourseMaterial.
    * @param {string} materialId - The associated material ID.

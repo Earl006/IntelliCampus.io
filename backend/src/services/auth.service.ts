@@ -1,13 +1,44 @@
 import { PrismaClient, User } from "@prisma/client";
-import { generateToken, verifyToken } from "../utils/jwt.utils";
+import { generateToken } from "../utils/jwt.utils";
 import bycryptjs from "bcryptjs";
-import { v4 as uuidv4 } from "uuid";
 import path from "path";
-import sendMail from "../bg-services/email.servcie";
+import sendMail from "../bg-services/email.service";
 
 const prisma = new PrismaClient();
 
 export default class AuthService {
+  private async sendWelcomeEmail(user: User) {
+    try {
+      const templatePath = path.join(__dirname, "../mails/welcome.mail.ejs");
+      const body = { user };
+      await sendMail({
+        email: user.email,
+        subject: "Welcome to IntelliCampus",
+        template: templatePath,
+        body,
+      });
+    } catch (error) {
+      console.error('Welcome email failed:', error);
+      // Log to monitoring service
+    }
+  }
+
+  private async sendPasswordResetEmail(user: User, resetCode: string) {
+    try {
+      const templatePath = path.join(__dirname, "../mails/reset-password.mail.ejs");
+      const body = { user, resetCode };
+      await sendMail({
+        email: user.email,
+        subject: "Reset Your Password - IntelliCampus",
+        template: templatePath,
+        body,
+      });
+    } catch (error) {
+      console.error('Reset password email failed:', error);
+      // Log to monitoring service
+    }
+  }
+
   async registerUser(data: User) {
     const phoneNumberExists = await prisma.user.findUnique({
       where: { phoneNumber: data.phoneNumber },
@@ -32,14 +63,8 @@ export default class AuthService {
       },
     });
 
-    const templatePath = path.join(__dirname, "../mails/welcome.mail.ejs");
-    const body = { user };
-    await sendMail({
-      email: user.email,
-      subject: "Welcome to IntelliCampus",
-      template: templatePath,
-      body,
-    });
+    // Send welcome email in background
+    Promise.resolve(this.sendWelcomeEmail(user)).catch(console.error);
 
     return user;
   }
@@ -65,6 +90,8 @@ export default class AuthService {
       id: user.id,
       email: user.email,
       phoneNumber: user.phoneNumber,
+      role: user.role,
+
     });
 
     return { user, token };
@@ -93,14 +120,8 @@ export default class AuthService {
       },
     });
 
-    const templatePath = path.join(__dirname, "../mails/reset-password.mail.ejs");
-    const body = { user, resetCode };
-    await sendMail({
-      email: user.email,
-      subject: "Reset Your Password - IntelliCampus",
-      template: templatePath,
-      body,
-    });
+    // Send reset password email in background
+    Promise.resolve(this.sendPasswordResetEmail(user, resetCode)).catch(console.error);
 
     return resetCode;
   }

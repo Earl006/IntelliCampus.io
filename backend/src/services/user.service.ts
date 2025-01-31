@@ -1,7 +1,7 @@
 import { PrismaClient, User, Role } from "@prisma/client";
 import bycryptjs from "bcryptjs";
 import path from "path";
-import sendMail from "../bg-services/email.servcie";
+import sendMail from "../bg-services/email.service";
 import { v4 as uuidv4 } from "uuid";
 
 const prisma = new PrismaClient();

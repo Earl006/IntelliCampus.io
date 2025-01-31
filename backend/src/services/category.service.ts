@@ -1,34 +1,72 @@
 import { PrismaClient, Category, SubCategory } from '@prisma/client';
-import { createClient } from 'redis';
+import redisClient from '../bg-services/redis.service';
 
 const prisma = new PrismaClient();
-const redisClient = createClient({
-  url: process.env.REDIS_URL || 'redis://localhost:6379',
-});
-redisClient.connect().catch(console.error);
+const CACHE_TTL = 3600; // 1 hour in seconds
+const CACHE_KEYS = {
+  ALL_CATEGORIES: 'all-categories',
+  CATEGORY_BY_ID: (id: string) => `category:${id}`,
+  SUB_CATEGORIES: (categoryId: string) => `subcategories:${categoryId}`
+
+};
 
 export default class CategoryService {
-  /**
-   * Create a new category.
-   * @param {string} name - The category name.
-   */
-  async createCategory(name: string): Promise<Category> {
-    // Check cache first (optional). If found, return it or throw an error if duplicate.
-    const cachedValue = await redisClient.get(`category:${name}`);
-    if (cachedValue) {
-      throw new Error('Category with this name already exists (cached).');
+  private async cacheSet(key: string, data: any): Promise<void> {
+    try {
+      await redisClient.setEx(key, CACHE_TTL, JSON.stringify(data));
+    } catch (error) {
+      console.warn('Cache set failed:', error);
     }
+  }
 
-    // Create category in DB.
-    const category = await prisma.category.create({
-      data: {
-        name,
-      },
-    });
+  private async cacheGet(key: string): Promise<any> {
+    try {
+      const data = await redisClient.get(key);
+      return data ? JSON.parse(data) : null;
+    } catch (error) {
+      console.warn('Cache get failed:', error);
+      return null;
+    }
+  }
 
-    // Update cache.
-    await redisClient.set(`category:${category.name}`, JSON.stringify(category));
-    return category;
+  private async invalidateCache(keys: string[]): Promise<void> {
+    try {
+      await Promise.all(keys.map(key => redisClient.del(key)));
+    } catch (error) {
+      console.warn('Cache invalidation failed:', error);
+    }
+  }
+
+  async createCategory(name: string): Promise<Category> {
+    try {
+      console.log('Creating new category:', name);
+      
+      const categoryExists = await prisma.category.findUnique({
+        where: { name }
+      });
+      
+      if (categoryExists) {
+        throw new Error('Category already exists');
+      }
+  
+      const category = await prisma.category.create({
+        data: { name }
+      });
+      
+
+      console.log('Category created:', category);
+  
+      // Clear the all categories cache to force refresh
+      await this.invalidateCache([CACHE_KEYS.ALL_CATEGORIES]);
+      console.log('Invalidated categories cache');
+  
+      return category;
+    } catch (error: any) {
+      if (error.code === 'P2002') {
+        throw new Error('Category already exists');
+      }
+      throw error;
+    }
   }
 
   /**
@@ -103,19 +141,31 @@ export default class CategoryService {
    * @param {string} name       - The subcategory name.
    */
   async createSubCategory(categoryId: string, name: string): Promise<SubCategory> {
-    // Optional cache check for duplicates, not shown for brevity.
-    const subCategory = await prisma.subCategory.create({
-      data: {
-        name,
-        categoryId,
-      },
-    });
+    try {
 
-    // Invalidating or updating relevant caches.
-    await redisClient.del(`category:id:${categoryId}`);
-    // Potentially re-fetch updated category and set to cache if needed.
+      const subCategoryExists = await prisma.subCategory.findUnique({
+        where: { name }
+      });
 
-    return subCategory;
+      if(subCategoryExists){
+        throw new Error('Subcategory already exists');
+      }
+      const subCategory = await prisma.subCategory.create({
+        data: { name, categoryId }
+      });
+
+      // Invalidate affected caches
+      await this.invalidateCache([
+        CACHE_KEYS.ALL_CATEGORIES,
+        CACHE_KEYS.CATEGORY_BY_ID(categoryId),
+        CACHE_KEYS.SUB_CATEGORIES(categoryId)
+      ]);
+
+      return subCategory;
+    } catch (error) {
+      console.error('Error creating subcategory:', error);
+      throw error;
+    }
   }
 
   /**
@@ -159,18 +209,43 @@ export default class CategoryService {
    * Optional: Retrieve a list of all categories and subcategories.
    */
   async listAllCategories(): Promise<Category[]> {
-    // Attempt to get from cache.
-    const cached = await redisClient.get('all-categories');
-    if (cached) {
-      return JSON.parse(cached);
+    try {
+      // Fetch with complete relation tree
+      const categories = await prisma.category.findMany({
+        include: {
+          subCategories: {
+            select: {
+              id: true,
+              name: true,
+              categoryId: true,
+              // category: {
+              //   select: {
+              //     id: true,
+              //     name: true
+              //   }
+              // }
+            }
+          }
+        }
+       
+      });
+
+      // Update cache with fresh data
+      if (categories.length > 0) {
+        await this.cacheSet(CACHE_KEYS.ALL_CATEGORIES, categories);
+        // Cache individual subcategory lists
+        for (const category of categories) {
+          await this.cacheSet(
+            CACHE_KEYS.SUB_CATEGORIES(category.id),
+            category.subCategories
+          );
+        }
+      }
+
+      return categories;
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+      throw error;
     }
-
-    const categories = await prisma.category.findMany({
-      include: { subCategories: true },
-    });
-
-    // Update cache.
-    await redisClient.set('all-categories', JSON.stringify(categories));
-    return categories;
   }
 }

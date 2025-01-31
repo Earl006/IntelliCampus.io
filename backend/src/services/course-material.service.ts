@@ -1,5 +1,5 @@
 import { PrismaClient, MaterialType, CourseMaterial } from '@prisma/client';
-import { createClient } from 'redis';
+import redisClient from '../bg-services/redis.service';
 import { uploadToCloudinary } from '../bg-services/file-upload.service';
 
 /**
@@ -10,10 +10,7 @@ import { uploadToCloudinary } from '../bg-services/file-upload.service';
  * - Caching reads in Redis
  */
 const prisma = new PrismaClient();
-const redisClient = createClient({
-  url: process.env.REDIS_URL || 'redis://localhost:6379',
-});
-redisClient.connect().catch(console.error);
+
 
 export default class CourseMaterialService {
  /**
