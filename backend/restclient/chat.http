@@ -1,0 +1,60 @@
+# npm install socket.io-client
+# node tests/chat/websocket.test.js
+
+
+
+@baseUrl = http://localhost:3000/api/chat
+@courseId = 123e4567-e89b-12d3-a456-426614174000
+@courseRoomId = 456e7890-e12b-12d3-a456-426614174000
+@cohortId = 789e1234-e56b-12d3-a456-426614174000
+@cohortRoomId = 012e3456-e78b-12d3-a456-426614174000
+
+### Get auth token
+# @name login
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+    "email": "test@example.com",
+    "password": "password123"
+}
+
+@authToken = {{login.response.body.token}}
+
+### Course Chat Operations ###
+
+### Create course chat room
+POST {{baseUrl}}/course/{{courseId}}/room
+Authorization: Bearer {{authToken}}
+
+### Get course chat history
+GET {{baseUrl}}/course/{{courseRoomId}}/messages
+Authorization: Bearer {{authToken}}
+
+### Post message to course chat (HTTP fallback)
+POST {{baseUrl}}/course/{{courseRoomId}}/message
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "content": "Test message in course chat"
+}
+
+### Cohort Chat Operations ###
+
+### Create cohort chat room
+POST {{baseUrl}}/cohort/{{cohortId}}/room
+Authorization: Bearer {{authToken}}
+
+### Get cohort chat history
+GET {{baseUrl}}/cohort/{{cohortRoomId}}/messages
+Authorization: Bearer {{authToken}}
+
+### Post message to cohort chat (HTTP fallback)
+POST {{baseUrl}}/cohort/{{cohortRoomId}}/message
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "content": "Test message in cohort chat"
+}
