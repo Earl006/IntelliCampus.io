@@ -1,0 +1,44 @@
+@baseUrl = http://localhost:3000/api
+@materialId = 123e4567-e89b-12d3-a456-426614174000
+@courseId = 987e6543-e21b-12d3-a456-426614174000
+
+### Get auth token
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+    "email": "test@example.com",
+    "password": "password123"
+}
+
+@authToken = {{login.response.body.token}}
+
+### Public Routes ###
+
+### Get comments for material
+GET {{baseUrl}}/comment-review/materials/{{materialId}}/comments
+
+### Get reviews for course
+GET {{baseUrl}}/comment-review/courses/{{courseId}}/reviews
+
+### Protected Routes ###
+
+### Add comment to material
+POST {{baseUrl}}/comment-review/materials/{{materialId}}/comments
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "content": "This is a test comment on the material"
+}
+
+### Add review to course
+POST {{baseUrl}}/comment-review/courses/{{courseId}}/reviews
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "rating": 5,
+    "comment": "Excellent course, very informative!"
+}
