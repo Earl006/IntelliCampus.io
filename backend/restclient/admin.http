@@ -1,0 +1,60 @@
+@baseUrl = http://localhost:3000/api/admin
+@userId = 123e4567-e89b-12d3-a456-426614174000
+@categoryId = 987e6543-e21b-12d3-a456-426614174000
+
+### Get admin token
+# @name login
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+    "email": "admin@example.com",
+    "password": "adminpass123"
+}
+
+@authToken = {{login.response.body.token}}
+
+### Instructor Management ###
+
+### Approve instructor request
+POST {{baseUrl}}/instructors/approve/{{userId}}
+Authorization: Bearer {{authToken}}
+
+### Reject instructor request
+POST {{baseUrl}}/instructors/reject/{{userId}}
+Authorization: Bearer {{authToken}}
+
+### User Management ###
+
+### Manage user (activate/deactivate/delete)
+POST {{baseUrl}}/users/{{userId}}
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "action": "deactivate"
+}
+
+### Category Management ###
+
+### Manage category
+POST {{baseUrl}}/categories
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "action": "create",
+    "name": "New Category"
+}
+
+### Chat Monitoring ###
+
+### Monitor chat rooms
+GET {{baseUrl}}/chat/monitor
+Authorization: Bearer {{authToken}}
+
+### Dashboard ###
+
+### Get dashboard stats
+GET {{baseUrl}}/dashboard/stats
+Authorization: Bearer {{authToken}}
