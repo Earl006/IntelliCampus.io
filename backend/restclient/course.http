@@ -1,0 +1,135 @@
+@baseUrl = http://localhost:3000/api/courses
+@courseId = 123e4567-e89b-12d3-a456-426614174000
+@categoryId = 456e7890-e12b-12d3-a456-426614174000
+@instructorId = 789e1234-e56b-12d3-a456-426614174000
+@cohortId = 012e3456-e78b-12d3-a456-426614174000
+@targetCohortId = 345e6789-e12b-12d3-a456-426614174000
+
+### Auth Setup ###
+
+# @name loginAdmin
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+    "email": "admin@example.com",
+    "password": "adminpass123"
+}
+
+@adminToken = {{loginAdmin.response.body.token}}
+
+# @name loginInstructor
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+    "email": "instructor@example.com",
+    "password": "instructorpass123"
+}
+
+@instructorToken = {{loginInstructor.response.body.token}}
+
+# @name loginStudent
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+    "email": "student@example.com",
+    "password": "studentpass123"
+}
+
+@studentToken = {{loginStudent.response.body.token}}
+
+### Public Routes ###
+
+### List all courses
+GET {{baseUrl}}
+Authorization: Bearer {{studentToken}}
+
+### Get course by ID
+GET {{baseUrl}}/{{courseId}}
+Authorization: Bearer {{studentToken}}
+
+### Get courses by category
+GET {{baseUrl}}/category/{{categoryId}}
+Authorization: Bearer {{studentToken}}
+
+### Get instructor's courses
+GET {{baseUrl}}/instructor/{{instructorId}}
+Authorization: Bearer {{studentToken}}
+
+### Student Routes ###
+
+### Enroll in course
+POST {{baseUrl}}/{{courseId}}/enroll
+Authorization: Bearer {{studentToken}}
+Content-Type: application/json
+
+{
+    "paymentMethod": "MPESA"
+}
+
+### Defer to different cohort
+POST {{baseUrl}}/cohorts/{{cohortId}}/defer/{{targetCohortId}}
+Authorization: Bearer {{studentToken}}
+
+### Instructor Routes ###
+
+### Create course
+POST {{baseUrl}}
+Authorization: Bearer {{instructorToken}}
+Content-Type: application/json
+
+{
+    "title": "Advanced TypeScript",
+    "description": "Deep dive into TypeScript features",
+    "bannerImageUrl": "https://example.com/banner.jpg",
+    "isPaid": true,
+    "price": 99.99,
+    "subCategoryIds": ["cat1", "cat2"]
+}
+
+### Update course
+PUT {{baseUrl}}/{{courseId}}
+Authorization: Bearer {{instructorToken}}
+Content-Type: application/json
+
+{
+    "title": "Updated TypeScript Course",
+    "description": "Updated course content",
+    "price": 129.99
+}
+
+### Delete course
+DELETE {{baseUrl}}/{{courseId}}
+Authorization: Bearer {{instructorToken}}
+
+### Publish/Unpublish course
+POST {{baseUrl}}/{{courseId}}/publish
+Authorization: Bearer {{instructorToken}}
+Content-Type: application/json
+
+{
+    "publish": true
+}
+
+### Cohort Management ###
+
+### Create cohort
+POST {{baseUrl}}/{{courseId}}/cohorts
+Authorization: Bearer {{instructorToken}}
+Content-Type: application/json
+
+{
+    "startDate": "2024-04-01T00:00:00Z"
+}
+
+### List course cohorts
+GET {{baseUrl}}/{{courseId}}/cohorts
+Authorization: Bearer {{instructorToken}}
+
+### Student Management ###
+
+### List enrolled students
+GET {{baseUrl}}/{{courseId}}/students
+Authorization: Bearer {{instructorToken}}

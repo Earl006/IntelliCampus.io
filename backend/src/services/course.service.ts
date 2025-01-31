@@ -48,6 +48,47 @@ export default class CourseService {
     return course;
   }
 
+  async getCourse(courseId: string) {
+    return this.prisma.course.findUnique({
+      where: { id: courseId },
+      include: {
+        instructor: true,
+        subCategories: true,
+        chatRooms: true,
+      },
+    });
+  }
+
+  async getPublishedCourses() {
+    return this.prisma.course.findMany({
+      where: { isPublished: true },
+      include: {
+        instructor: true,
+        subCategories: true,
+      },
+    });
+  }
+
+  async getCoursesByInstructor(instructorId: string) {
+    return this.prisma.course.findMany({
+      where: { instructorId },
+      include: {
+        instructor: true,
+        subCategories: true,
+      },
+    });
+  }
+
+  async getCoursesByCategory(categoryId: string) {
+    return this.prisma.course.findMany({
+      where: { subCategories: { some: { categoryId } } },
+      include: {
+        instructor: true,
+        subCategories: true,
+      },
+    });
+  }
+
   async updateCourse(
     courseId: string,
     data: Partial<Course> & {
@@ -120,6 +161,25 @@ export default class CourseService {
 
     await this.chatService.createCohortChatRoom(cohort.id);
     return cohort;
+  }
+
+  /**
+   * Retrieves all cohorts for a course.
+   */
+  async getCohortsForCourse(courseId: string) {
+    return this.prisma.cohort.findMany({
+      where: { courseId },
+      include: { chatRooms: true },
+    });
+  }
+
+  /**
+   * Retrieves all enrollments for a course.
+   */
+  async getEnrollmentsForCourse(courseId: string) {
+    return this.prisma.enrollment.findMany({
+      where: { courseId },
+    });
   }
 
   /**

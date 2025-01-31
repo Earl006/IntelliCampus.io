@@ -1,0 +1,66 @@
+@baseUrl = http://localhost:3000/api/materials
+@courseId = 123e4567-e89b-12d3-a456-426614174000
+@materialId = 987e6543-e21b-12d3-a456-426614174000
+
+### Get auth tokens
+# @name loginInstructor
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+    "email": "instructor@example.com",
+    "password": "password123"
+}
+
+@instructorToken = {{loginInstructor.response.body.token}}
+
+### Public Routes (Requires Authentication) ###
+
+### Get materials for course
+GET {{baseUrl}}/course/{{courseId}}
+Authorization: Bearer {{instructorToken}}
+
+### Protected Routes (Instructor Only) ###
+
+### Create material with file
+POST {{baseUrl}}/course/{{courseId}}
+Authorization: Bearer {{instructorToken}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary
+ 
+------WebKitFormBoundary
+Content-Disposition: form-data; name="title"
+
+Sample PDF Material
+------WebKitFormBoundary
+Content-Disposition: form-data; name="type"
+
+DOCUMENT
+------WebKitFormBoundary
+Content-Disposition: form-data; name="week"
+
+1
+------WebKitFormBoundary
+Content-Disposition: form-data; name="day"
+
+1
+------WebKitFormBoundary
+Content-Disposition: form-data; name="files"; filename="sample.pdf"
+Content-Type: application/pdf
+
+< ./sample.pdf
+------WebKitFormBoundary--
+
+### Update material
+PUT {{baseUrl}}/{{materialId}}
+Authorization: Bearer {{instructorToken}}
+Content-Type: application/json
+
+{
+    "title": "Updated Material Title",
+    "week": 2,
+    "day": 3
+}
+
+### Delete material
+DELETE {{baseUrl}}/{{materialId}}
+Authorization: Bearer {{instructorToken}}

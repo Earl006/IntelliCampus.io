@@ -1,0 +1,83 @@
+@baseUrl = http://localhost:3000/api/payments
+@paymentId = 123e4567-e89b-12d3-a456-426614174000
+@courseId = 456e7890-e12b-12d3-a456-426614174000
+
+### Get auth token
+# @name login
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+    "email": "student@example.com",
+    "password": "password123"
+}
+
+@authToken = {{login.response.body.token}}
+
+### Payment Initiation ###
+
+### Initiate M-Pesa payment
+POST {{baseUrl}}/initiate
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "amount": 999.99,
+    "courseId": "{{courseId}}",
+    "paymentMethod": "MPESA",
+    "phoneNumber": "+254712345678",
+    "currency": "KES"
+}
+
+### Initiate PayPal payment
+POST {{baseUrl}}/initiate
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "amount": 99.99,
+    "courseId": "{{courseId}}",
+    "paymentMethod": "PAYPAL",
+    "currency": "USD"
+}
+
+### Payment Status ###
+
+### Check payment status
+GET {{baseUrl}}/status/{{paymentId}}
+Authorization: Bearer {{authToken}}
+
+### Webhook Testing ###
+
+### M-Pesa webhook
+POST {{baseUrl}}/webhook/mpesa
+Content-Type: application/json
+x-webhook-signature: sample-mpesa-signature
+
+{
+    "TransactionType": "Pay Bill",
+    "TransID": "RKTQDM7W6S",
+    "TransTime": "20240220153324",
+    "TransAmount": "999.99",
+    "BusinessShortCode": "123456",
+    "BillRefNumber": "{{paymentId}}",
+    "PhoneNumber": "+254712345678",
+    "FirstName": "John"
+}
+
+### PayPal webhook
+POST {{baseUrl}}/webhook/paypal
+Content-Type: application/json
+x-webhook-signature: sample-paypal-signature
+
+{
+    "event_type": "PAYMENT.CAPTURE.COMPLETED",
+    "resource": {
+        "id": "{{paymentId}}",
+        "status": "COMPLETED",
+        "amount": {
+            "value": "99.99",
+            "currency_code": "USD"
+        }
+    }
+}
