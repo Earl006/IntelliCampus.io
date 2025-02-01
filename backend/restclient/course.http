@@ -1,7 +1,7 @@
 @baseUrl = http://localhost:3000/api/courses
-@instructorToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ1YWM0OWViLWJiMmMtNDMyZS1iMDk0LTMyZjFkYTZkYmYzNiIsImVtYWlsIjoiZWFybGpvZTA2QG91dGxvb2suY29tIiwicGhvbmVOdW1iZXIiOiIwNzExMjI0NTg1MyIsInJvbGUiOiJJTlNUUlVDVE9SIiwiaWF0IjoxNzM4MzcxMTUzLCJleHAiOjE3MzgzNzQ3NTN9.FqcbQ5sgG6wQkF-FfkOvFrjdFtToW-Fq6J6SSOO6tSI
+@instructorToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ1YWM0OWViLWJiMmMtNDMyZS1iMDk0LTMyZjFkYTZkYmYzNiIsImVtYWlsIjoiZWFybGpvZTA2QG91dGxvb2suY29tIiwicGhvbmVOdW1iZXIiOiIwNzExMjI0NTg1MyIsInJvbGUiOiJJTlNUUlVDVE9SIiwiaWF0IjoxNzM4Mzc3NTQ5LCJleHAiOjE3MzgzODExNDl9.9Igu598WeStFLxEy5RlHI_ddugtBaTY-OxrUFLz7kBI
 @adminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjQ2ODgwZjkzLWMzYTUtNGZmNC04YjJjLTE1MDljMDEzNmE1MiIsImVtYWlsIjoiZWFybGpvZTA2QGdtYWlsLmNvbSIsInBob25lTnVtYmVyIjoiMDcxMTIyNzIyNTAiLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3MzgzMzQyMTcsImV4cCI6MTczODMzNzgxN30.3w3mPN06i2IOU_O-m1XcQrXXrk4_3ToARkeWo8Kl8ik
-@studentToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjE5YjdhZGVjLTJkNjktNDJiMS05ODc2LTQ0MmRlNzZhOGNlNSIsImVtYWlsIjoicmlnaHRtZW5jdXN0b216QGdtYWlsLmNvbSIsInBob25lTnVtYmVyIjoiMDEwNjMyNjYyNyIsInJvbGUiOiJMRUFSTkVSIiwiaWF0IjoxNzM4MzcxNDkwLCJleHAiOjE3MzgzNzUwOTB9.yZdsAyUNSrYzgHa10I8CIZnhXuRrVBLo2xOMk4BXKsk
+@studentToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjE5YjdhZGVjLTJkNjktNDJiMS05ODc2LTQ0MmRlNzZhOGNlNSIsImVtYWlsIjoicmlnaHRtZW5jdXN0b216QGdtYWlsLmNvbSIsInBob25lTnVtYmVyIjoiMDEwNjMyNjYyNyIsInJvbGUiOiJMRUFSTkVSIiwiaWF0IjoxNzM4Mzc1NDIxLCJleHAiOjE3MzgzNzkwMjF9.uAid5RNa6j1Y1n9BBo0GJSsB2KCKMb1BdzZSWWv-wNM
 
 ### Auth Setup ###
 
@@ -52,7 +52,7 @@ Authorization: Bearer {{studentToken}}
 ### Student Routes ###
 
 ### Enroll in course
-POST {{baseUrl}}/e69bc7b7-1eb6-4cc0-b41f-94989ae1f7df/enroll
+POST {{baseUrl}}/92976e55-7da0-4e6a-a2b6-ae4bf8865446/enroll
 Authorization: Bearer {{studentToken}}
 Content-Type: application/json
 
@@ -74,11 +74,11 @@ Content-Type: multipart/form-data; boundary=----WebKitFormBoundary
 ------WebKitFormBoundary
 Content-Disposition: form-data; name="title"
 
-Software Testing and Automation 1 (Cypress)
+Introduction To JavaScript
 ------WebKitFormBoundary
 Content-Disposition: form-data; name="description"
 
-Deep dive into Cypress Testing Framework
+Get started with our comprehensive introduction to JavaScript programming
 ------WebKitFormBoundary
 Content-Disposition: form-data; name="isPaid"
 
@@ -97,7 +97,7 @@ Content-Disposition: form-data; name="subCategoryIds"
 Content-Disposition: form-data; name="bannerImage"; filename="banner.jpg"
 Content-Type: image/jpeg
 
-< /home/earljoe/Downloads/cypress-banner.jpg
+< /home/earljoe/Downloads/JavaScript-Introduction.jpg
 ------WebKitFormBoundary--
 
 ### Update course
@@ -128,7 +128,7 @@ DELETE {{baseUrl}}/e69bc7b7-1eb6-4cc0-b41f-94989ae1f7df
 Authorization: Bearer {{instructorToken}}
 
 ### Publish/Unpublish course
-POST {{baseUrl}}/e69bc7b7-1eb6-4cc0-b41f-94989ae1f7df/publish
+POST {{baseUrl}}/92976e55-7da0-4e6a-a2b6-ae4bf8865446/publish
 Authorization: Bearer {{instructorToken}}
 Content-Type: application/json
 
@@ -139,7 +139,7 @@ Content-Type: application/json
 ### Cohort Management ###
 
 ### Create cohort
-POST {{baseUrl}}/e69bc7b7-1eb6-4cc0-b41f-94989ae1f7df/cohorts
+POST {{baseUrl}}/92976e55-7da0-4e6a-a2b6-ae4bf8865446/cohorts
 Authorization: Bearer {{instructorToken}}
 Content-Type: application/json
 
@@ -148,11 +148,11 @@ Content-Type: application/json
 }
 
 ### List course cohorts
-GET {{baseUrl}}/e69bc7b7-1eb6-4cc0-b41f-94989ae1f7df/cohorts
+GET {{baseUrl}}/92976e55-7da0-4e6a-a2b6-ae4bf8865446/cohorts
 Authorization: Bearer {{instructorToken}}
 
 ### Student Management ###
 
 ### List enrolled students
-GET {{baseUrl}}/e69bc7b7-1eb6-4cc0-b41f-94989ae1f7df/students
+GET {{baseUrl}}/92976e55-7da0-4e6a-a2b6-ae4bf8865446/students
 Authorization: Bearer {{instructorToken}}

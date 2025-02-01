@@ -158,24 +158,54 @@ export default class CourseService {
    * Creates a new cohort for a course and sets up a chat room.
    */
   async createCohort(courseId: string, instructorId: string, startDate: Date) {
+    // 1. Gather existing cohorts for the given course
+    const existingCohorts = await this.prisma.cohort.findMany({
+      where: { courseId },
+      orderBy: { startDate: 'desc' } // newest start date first
+    });
+  
+    // 2. Ensure the new cohort doesn't start earlier than the latest existing cohort
+    if (existingCohorts.length > 0) {
+      const latestCohort = existingCohorts[0];
+      if (startDate < latestCohort.startDate) {
+        throw new Error(
+          `Cannot create a new cohort with a start date earlier than existing cohort (${latestCohort.name}).`
+        );
+      }
+    }
+  
+    // 3. Compute the next cohort number by parsing existing cohort names
+    let maxNumber = 0;
+    for (const cohort of existingCohorts) {
+      const parts = cohort.name.split(' ');
+      const numPart = parseInt(parts[parts.length - 1], 10);
+      if (!isNaN(numPart) && numPart > maxNumber) {
+        maxNumber = numPart;
+      }
+    }
+    const newCohortNumber = maxNumber + 1;
+  
+    // 4. Create the new cohort
     const cohort = await this.prisma.cohort.create({
       data: {
-        name: `Cohort ${new Date().getMonth() + 1}`,
+        name: `Cohort ${newCohortNumber}`,
         courseId,
         instructorId,
-        startDate,
+        startDate
       },
       include: {
         chatRooms: true,
         course: {
           include: {
-            chatRooms: true,
-          },
-        },
-      },
+            chatRooms: true
+          }
+        }
+      }
     });
-
+  
+    // 5. Create chat room for new cohort
     await this.chatService.createCohortChatRoom(cohort.id);
+  
     return cohort;
   }
 
@@ -206,25 +236,42 @@ export default class CourseService {
     courseId: string,
     paymentMethod?: PaymentMethod
   ): Promise<Enrollment> {
+    console.log(`Attempting to enroll student ${studentId} in course ${courseId}`);
+    
+    // Check if course exists
     const course = await this.prisma.course.findUnique({
       where: { id: courseId },
+      include: {
+        chatRooms: true // Include chat rooms for notifications
+      }
     });
     if (!course) {
       throw new Error('Course not found');
     }
-
-    // If course is paid, handle payment first
+  
+    // Check if student already enrolled
+    // const existingEnrollment = await this.prisma.enrollment.findFirst({
+    //   where: {
+    //     userId: studentId,
+    //     courseId,
+    //   },
+    // });
+    // if (existingEnrollment) {
+    //   throw new Error('Student is already enrolled in this course');
+    // }
+  
+    // If course is paid, handle payment
     if (course.isPaid) {
       if (!paymentMethod) {
         throw new Error('Payment method required for paid courses');
       }
-
-      // Retrieve user data for the payment request
+  
       const user = await this.prisma.user.findUnique({ where: { id: studentId } });
       if (!user) {
         throw new Error('User not found');
       }
-
+  
+      console.log(`Initiating payment for student ${studentId}`);
       const paymentResponse = await this.paymentService.initiatePayment({
         amount: course.price,
         courseId,
@@ -234,19 +281,40 @@ export default class CourseService {
         customerEmail: user.email,
         phoneNumber: user.phoneNumber,
       });
-
-      // If initiatePayment fails or returns success: false
+  
       if (!paymentResponse.success) {
         throw new Error('Payment failed. Please retry or use a different method.');
       }
-
-      // Enrollment is completed only after webhook confirms payment
-      // Return the payment details for the frontend
+  
+      // Notify chat room about pending enrollment
+      if (course.chatRooms[0]) {
+        console.log(`Notifying course room ${course.chatRooms[0].id} about pending enrollment`);
+        await this.chatService.notifyRoomMembership(
+          course.chatRooms[0].id,
+          studentId,
+          'joined'
+        );
+      }
+  
+      // Enrollment completed after webhook confirms payment
       throw new Error('Payment initiated. Awaiting confirmation...');
     }
-
-    // Otherwise, free course - direct enrollment
-    return this.createEnrollment(studentId, courseId);
+  
+    // For free courses, enroll directly and notify
+    console.log(`Creating direct enrollment for free course ${courseId}`);
+    const enrollment = await this.createEnrollment(studentId, courseId);
+  
+    // Notify chat room about successful enrollment
+    if (course.chatRooms?.[0]) {
+      console.log('Notifying chat rooms about enrollment');
+      await this.chatService.notifyRoomMembership(
+        course.chatRooms[0].id,
+        studentId,
+        'joined'
+      );
+    }
+  
+    return enrollment;
   }
 
   /**

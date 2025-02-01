@@ -1,26 +1,110 @@
 const io = require('socket.io-client');
+const { PrismaClient } = require('@prisma/client');
 
-const socket = io('http://localhost:3000', {
-  auth: {
-    token: 'your-jwt-token'
+const prisma = new PrismaClient();
+const TEST_DURATION = 1200000; 
+const DEBUG = true;
+const joinedRooms = new Set();
+
+async function runSocketTest() {
+  try {
+    const courses = await prisma.course.findMany({
+      where: { isPublished: true },
+      include: { 
+        chatRooms: true,
+        cohorts: {
+          include: { chatRooms: true }
+        }
+      }
+    });
+
+    console.log(`Found ${courses.length} courses to monitor`);
+
+    const socket = io('http://localhost:3000', {
+      auth: { token: process.env.STUDENT_TOKEN },
+      transports: ['websocket'],
+      reconnection: true,
+      reconnectionAttempts: 5
+    });
+
+    function joinRooms() {
+      courses.forEach(course => {
+        course.chatRooms?.forEach(room => {
+          // Match the exact room format used in ChatService
+          const courseRoomId = `course_${room.id}`;
+          if (!joinedRooms.has(courseRoomId)) {
+            DEBUG && console.log(`Joining course room: ${courseRoomId}`);
+            socket.emit('joinCourseRoom', room.id);
+            joinedRooms.add(courseRoomId);
+          }
+        });
+    
+        course.cohorts?.forEach(cohort => {
+          cohort.chatRooms?.forEach(room => {
+            const cohortRoomId = `cohort_${room.id}`;
+            if (!joinedRooms.has(cohortRoomId)) {
+              DEBUG && console.log(`Joining cohort room: ${cohortRoomId}`);
+              socket.emit('joinCohortRoom', room.id);
+              joinedRooms.add(cohortRoomId);
+            }
+          });
+        });
+      });
+    }
+    
+
+    socket.on('connect', () => {
+      console.log(`[${new Date().toISOString()}] Connected as ${socket.id}`);
+      socket.emit('requestTestAccess');
+    });
+
+    socket.on('testAccessGranted', joinRooms);
+
+    socket.on('membershipChange', (data) => {
+      const roomPrefix = data.roomId.includes('course_') ? 'course' : 'cohort';
+      console.log('\n🔔 Event:', JSON.stringify({
+        type: 'membershipChange',
+        roomType: roomPrefix,
+        data,
+        timestamp: new Date().toISOString(),
+        socketId: socket.id,
+        joinedRooms: Array.from(joinedRooms)
+      }, null, 2));
+    });
+
+    socket.on('roomJoined', (roomId) => {
+      console.log(`✅ Room joined: ${roomId}`);
+    });
+
+    socket.on('error', (error) => {
+      console.error('❌ Error:', error);
+    });
+
+    socket.on('disconnect', (reason) => {
+      console.log(`Disconnected: ${reason}`);
+      joinedRooms.clear();
+    });
+
+    socket.on('reconnect', (attemptNumber) => {
+      console.log(`Reconnected after ${attemptNumber} attempts`);
+      socket.emit('requestTestAccess');
+    });
+
+    process.on('SIGINT', cleanup);
+    setTimeout(cleanup, TEST_DURATION);
+
+    function cleanup() {
+      console.log('\nCleaning up...');
+      socket.disconnect();
+      prisma.$disconnect();
+      process.exit(0);
+    }
+
+  } catch (error) {
+    console.error('Fatal error:', error);
+    await prisma.$disconnect();
+    process.exit(1);
   }
-});
+}
 
-// Connect to course chat room
-socket.emit('joinCourseRoom', 'courseRoomId');
-
-// Send message
-socket.emit('courseChatMessage', {
-  roomId: 'courseRoomId',
-  content: 'Real-time test message'
-});
-
-// Listen for messages
-socket.on('course_message', (message) => {
-  console.log('Received:', message);
-});
-
-// Error handling
-socket.on('connect_error', (error) => {
-  console.error('Connection error:', error);
-});
+runSocketTest().catch(console.error);
