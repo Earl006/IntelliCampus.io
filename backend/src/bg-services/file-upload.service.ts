@@ -1,6 +1,8 @@
 import { v2 as cloudinary } from 'cloudinary';
 import { CloudinaryStorage } from 'multer-storage-cloudinary';
 import multer from 'multer';
+import { Readable } from 'stream';
+
 
 cloudinary.config({
   cloud_name: process.env.CLOUD_NAME,
@@ -34,21 +36,39 @@ const storage = new CloudinaryStorage({
 
 export const upload = multer({ storage: storage });
 
-export const uploadToCloudinary = async (file: Express.Multer.File): Promise<string> => {
+export async function uploadToCloudinary(file?: Express.Multer.File): Promise<string> {
+  if (!file) {
+    throw new Error('No file uploaded');
+  }
+
   try {
-    if (!file || !file.path) {
-      throw new Error('No file uploaded');
-    }
+    console.log('Uploading file to Cloudinary:', file.originalname, file.mimetype, file.size);
 
-    const result = await cloudinary.uploader.upload(file.path, {
-      folder: 'intelliCampus',
-      allowed_formats: ['jpg', 'png', 'jpeg', 'pdf', 'doc', 'docx', 'mp4', 'mov', 'avi'],
-      resource_type: file.mimetype.startsWith('video/') ? 'video' : 'auto'
+    // Convert buffer to stream
+    const fileStream = Readable.from(file.buffer);
+
+    return new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          folder: 'intelli-campus',
+          resource_type: 'auto',
+        },
+        (error, result) => {
+          if (error) {
+            console.error('Cloudinary error:', error);
+            return reject(new Error('Failed to upload file'));
+          }
+          if (!result) {
+            return reject(new Error('No result from Cloudinary'));
+          }
+          console.log('Cloudinary upload success:', result.secure_url);
+          resolve(result.secure_url);
+        }
+      );
+      fileStream.pipe(uploadStream);
     });
-
-    return result.secure_url;
-  } catch (error) {
-    console.error('Error uploading to Cloudinary:', error);
+  } catch (err) {
+    console.error('File upload error:', err);
     throw new Error('Failed to upload file');
   }
-};
+}

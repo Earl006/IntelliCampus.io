@@ -83,26 +83,22 @@ export default class UserService {
 
   // Request instructor role
   async requestInstructorRole(id: string): Promise<User | null> {
-    const templatePath = path.join(__dirname, "../mails/instructor-request.mail.ejs");
     const user = await prisma.user.findUnique({ where: { id } });
     if (!user) {
       throw new Error("User not found");
     }
 
-    const body = { user };
-    await sendMail({
-      email: user.email,
-      subject: "Instructor Role Request",
-      template: templatePath,
-      body,
-    });
-
-    return prisma.user.update({
+    const updatedUser = await prisma.user.update({
       where: { id },
       data: {
         instructorStatus: "PENDING",
       },
     });
+
+    // Send email in background
+    Promise.resolve(this.sendInstructorRequestEmail(user)).catch(console.error);
+
+    return updatedUser;
   }
 
   // Admin fetch of instructor requests
@@ -114,51 +110,43 @@ export default class UserService {
 
   // Approve instructor
   async approveInstructorRequests(id: string): Promise<User | null> {
-    const templatePath = path.join(__dirname, "../mails/approve-request.mail.ejs");
     const user = await prisma.user.findUnique({ where: { id } });
     if (!user) {
       throw new Error("User not found");
     }
 
-    const body = { user };
-    await sendMail({
-      email: user.email,
-      subject: "Instructor Role Approved",
-      template: templatePath,
-      body,
-    });
-
-    return prisma.user.update({
+    const updatedUser = await prisma.user.update({
       where: { id },
       data: {
         instructorStatus: "APPROVED",
         role: "INSTRUCTOR",
       },
     });
+
+    // Send approval email in background
+    Promise.resolve(this.sendInstructorApprovalEmail(user)).catch(console.error);
+
+    return updatedUser;
   }
 
   // Reject instructor
   async rejectInstructorRequests(id: string): Promise<User | null> {
-    const templatePath = path.join(__dirname, "../mails/reject-request.mail.ejs");
     const user = await prisma.user.findUnique({ where: { id } });
     if (!user) {
       throw new Error("User not found");
     }
 
-    const body = { user };
-    await sendMail({
-      email: user.email,
-      subject: "Instructor Role Rejected",
-      template: templatePath,
-      body,
-    });
-
-    return prisma.user.update({
+    const updatedUser = await prisma.user.update({
       where: { id },
       data: {
         instructorStatus: "REJECTED",
       },
     });
+
+    // Send rejection email in background
+    Promise.resolve(this.sendInstructorRejectionEmail(user)).catch(console.error);
+
+    return updatedUser;
   }
 
   // Assign role (admin usage)
@@ -185,5 +173,51 @@ export default class UserService {
       data: { isCompleted: true },
     });
     //  send mails to each enrolled learner with a "certificate" or usage of your choice
+  }
+
+  // Private email methods
+  private async sendInstructorRequestEmail(user: User) {
+    try {
+      const templatePath = path.join(__dirname, "../mails/instructor-request.mail.ejs");
+      const body = { user };
+      await sendMail({
+        email: user.email,
+        subject: "Instructor Role Request",
+        template: templatePath,
+        body,
+      });
+    } catch (error) {
+      console.error('Instructor request email failed:', error);
+    }
+  }
+
+  private async sendInstructorApprovalEmail(user: User) {
+    try {
+      const templatePath = path.join(__dirname, "../mails/approve-request.mail.ejs");
+      const body = { user };
+      await sendMail({
+        email: user.email,
+        subject: "Instructor Role Approved",
+        template: templatePath,
+        body,
+      });
+    } catch (error) {
+      console.error('Instructor approval email failed:', error);
+    }
+  }
+
+  private async sendInstructorRejectionEmail(user: User) {
+    try {
+      const templatePath = path.join(__dirname, "../mails/reject-request.mail.ejs");
+      const body = { user };
+      await sendMail({
+        email: user.email,
+        subject: "Instructor Role Rejected",
+        template: templatePath,
+        body,
+      });
+    } catch (error) {
+      console.error('Instructor rejection email failed:', error);
+    }
   }
 }

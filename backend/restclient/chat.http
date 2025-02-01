@@ -51,8 +51,8 @@ GET {{baseUrl}}/cohort/{{cohortRoomId}}/messages
 Authorization: Bearer {{authToken}}
 
 ### Post message to cohort chat (HTTP fallback)
-POST {{baseUrl}}/cohort/{{cohortRoomId}}/message
-Authorization: Bearer {{authToken}}
+POST {{baseUrl}}/cohort/2b652a2b-6b7a-4a18-ba3f-fda3d2eb2cdb/message
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjE5YjdhZGVjLTJkNjktNDJiMS05ODc2LTQ0MmRlNzZhOGNlNSIsImVtYWlsIjoicmlnaHRtZW5jdXN0b216QGdtYWlsLmNvbSIsInBob25lTnVtYmVyIjoiMDEwNjMyNjYyNyIsInJvbGUiOiJMRUFSTkVSIiwiaWF0IjoxNzM4MzcxNDkwLCJleHAiOjE3MzgzNzUwOTB9.yZdsAyUNSrYzgHa10I8CIZnhXuRrVBLo2xOMk4BXKsk
 Content-Type: application/json
 
 {

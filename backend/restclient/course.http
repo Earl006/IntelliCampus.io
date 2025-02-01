@@ -1,67 +1,58 @@
 @baseUrl = http://localhost:3000/api/courses
-@courseId = 123e4567-e89b-12d3-a456-426614174000
-@categoryId = 456e7890-e12b-12d3-a456-426614174000
-@instructorId = 789e1234-e56b-12d3-a456-426614174000
-@cohortId = 012e3456-e78b-12d3-a456-426614174000
-@targetCohortId = 345e6789-e12b-12d3-a456-426614174000
+@instructorToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ1YWM0OWViLWJiMmMtNDMyZS1iMDk0LTMyZjFkYTZkYmYzNiIsImVtYWlsIjoiZWFybGpvZTA2QG91dGxvb2suY29tIiwicGhvbmVOdW1iZXIiOiIwNzExMjI0NTg1MyIsInJvbGUiOiJJTlNUUlVDVE9SIiwiaWF0IjoxNzM4MzcxMTUzLCJleHAiOjE3MzgzNzQ3NTN9.FqcbQ5sgG6wQkF-FfkOvFrjdFtToW-Fq6J6SSOO6tSI
+@adminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjQ2ODgwZjkzLWMzYTUtNGZmNC04YjJjLTE1MDljMDEzNmE1MiIsImVtYWlsIjoiZWFybGpvZTA2QGdtYWlsLmNvbSIsInBob25lTnVtYmVyIjoiMDcxMTIyNzIyNTAiLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3MzgzMzQyMTcsImV4cCI6MTczODMzNzgxN30.3w3mPN06i2IOU_O-m1XcQrXXrk4_3ToARkeWo8Kl8ik
+@studentToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjE5YjdhZGVjLTJkNjktNDJiMS05ODc2LTQ0MmRlNzZhOGNlNSIsImVtYWlsIjoicmlnaHRtZW5jdXN0b216QGdtYWlsLmNvbSIsInBob25lTnVtYmVyIjoiMDEwNjMyNjYyNyIsInJvbGUiOiJMRUFSTkVSIiwiaWF0IjoxNzM4MzcxNDkwLCJleHAiOjE3MzgzNzUwOTB9.yZdsAyUNSrYzgHa10I8CIZnhXuRrVBLo2xOMk4BXKsk
 
 ### Auth Setup ###
 
-# @name loginAdmin
 POST http://localhost:3000/api/auth/login
 Content-Type: application/json
 
 {
-    "email": "admin@example.com",
-    "password": "adminpass123"
+    "email": "earljoe06@gmail.com",
+    "password": "password"
 }
 
-@adminToken = {{loginAdmin.response.body.token}}
-
-# @name loginInstructor
+### INSTRUCTOR TOKEN
 POST http://localhost:3000/api/auth/login
 Content-Type: application/json
 
 {
-    "email": "instructor@example.com",
-    "password": "instructorpass123"
+    "email": "earljoe06@outlook.com",
+    "password": "password"
 }
 
-@instructorToken = {{loginInstructor.response.body.token}}
-
-# @name loginStudent
+### STUDENT TOKEN
 POST http://localhost:3000/api/auth/login
 Content-Type: application/json
 
 {
-    "email": "student@example.com",
-    "password": "studentpass123"
+    "email": "rightmencustomz@gmail.com",
+    "password": "password"
 }
 
-@studentToken = {{loginStudent.response.body.token}}
 
 ### Public Routes ###
 
 ### List all courses
 GET {{baseUrl}}
-Authorization: Bearer {{studentToken}}
 
 ### Get course by ID
-GET {{baseUrl}}/{{courseId}}
+GET {{baseUrl}}/e69bc7b7-1eb6-4cc0-b41f-94989ae1f7df
 Authorization: Bearer {{studentToken}}
 
 ### Get courses by category
-GET {{baseUrl}}/category/{{categoryId}}
+GET {{baseUrl}}/category/90b68f2c-e759-4e70-8034-396b7565ad74
 Authorization: Bearer {{studentToken}}
 
 ### Get instructor's courses
-GET {{baseUrl}}/instructor/{{instructorId}}
+GET {{baseUrl}}/instructor/d5ac49eb-bb2c-432e-b094-32f1da6dbf36
 Authorization: Bearer {{studentToken}}
 
 ### Student Routes ###
 
 ### Enroll in course
-POST {{baseUrl}}/{{courseId}}/enroll
+POST {{baseUrl}}/e69bc7b7-1eb6-4cc0-b41f-94989ae1f7df/enroll
 Authorization: Bearer {{studentToken}}
 Content-Type: application/json
 
@@ -70,42 +61,74 @@ Content-Type: application/json
 }
 
 ### Defer to different cohort
-POST {{baseUrl}}/cohorts/{{cohortId}}/defer/{{targetCohortId}}
+POST {{baseUrl}}/cohorts/2b652a2b-6b7a-4a18-ba3f-fda3d2eb2cdb/defer/targetCohortId
 Authorization: Bearer {{studentToken}}
 
 ### Instructor Routes ###
 
-### Create course
+### Create course with banner
 POST {{baseUrl}}
 Authorization: Bearer {{instructorToken}}
-Content-Type: application/json
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary
+ 
+------WebKitFormBoundary
+Content-Disposition: form-data; name="title"
 
-{
-    "title": "Advanced TypeScript",
-    "description": "Deep dive into TypeScript features",
-    "bannerImageUrl": "https://example.com/banner.jpg",
-    "isPaid": true,
-    "price": 99.99,
-    "subCategoryIds": ["cat1", "cat2"]
-}
+Software Testing and Automation 1 (Cypress)
+------WebKitFormBoundary
+Content-Disposition: form-data; name="description"
+
+Deep dive into Cypress Testing Framework
+------WebKitFormBoundary
+Content-Disposition: form-data; name="isPaid"
+
+false
+------WebKitFormBoundary
+Content-Disposition: form-data; name="categoryIds"
+
+["90b68f2c-e759-4e70-8034-396b7565ad74"]
+
+------WebKitFormBoundary
+Content-Disposition: form-data; name="subCategoryIds"
+
+["7753f1b7-1f11-4671-ad9e-6b16cd757f67", "2b02ace0-6c78-4306-9de8-5ce25bd1c791"]
+
+------WebKitFormBoundary
+Content-Disposition: form-data; name="bannerImage"; filename="banner.jpg"
+Content-Type: image/jpeg
+
+< /home/earljoe/Downloads/cypress-banner.jpg
+------WebKitFormBoundary--
 
 ### Update course
-PUT {{baseUrl}}/{{courseId}}
+PUT {{baseUrl}}/e69bc7b7-1eb6-4cc0-b41f-94989ae1f7df
 Authorization: Bearer {{instructorToken}}
-Content-Type: application/json
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary
+ 
+------WebKitFormBoundary
+Content-Disposition: form-data; name="title"
 
-{
-    "title": "Updated TypeScript Course",
-    "description": "Updated course content",
-    "price": 129.99
-}
+Software Testing and Automation 1 (Cypress)
+------WebKitFormBoundary
+Content-Disposition: form-data; name="description"
+
+Deep dive into Cypress Testing Framework
+------WebKitFormBoundary
+Content-Disposition: form-data; name="isPaid"
+
+true
+------WebKitFormBoundary
+Content-Disposition: form-data; name="price"
+
+5000
+------WebKitFormBoundary--
 
 ### Delete course
-DELETE {{baseUrl}}/{{courseId}}
+DELETE {{baseUrl}}/e69bc7b7-1eb6-4cc0-b41f-94989ae1f7df
 Authorization: Bearer {{instructorToken}}
 
 ### Publish/Unpublish course
-POST {{baseUrl}}/{{courseId}}/publish
+POST {{baseUrl}}/e69bc7b7-1eb6-4cc0-b41f-94989ae1f7df/publish
 Authorization: Bearer {{instructorToken}}
 Content-Type: application/json
 
@@ -116,20 +139,20 @@ Content-Type: application/json
 ### Cohort Management ###
 
 ### Create cohort
-POST {{baseUrl}}/{{courseId}}/cohorts
+POST {{baseUrl}}/e69bc7b7-1eb6-4cc0-b41f-94989ae1f7df/cohorts
 Authorization: Bearer {{instructorToken}}
 Content-Type: application/json
 
 {
-    "startDate": "2024-04-01T00:00:00Z"
+    "startDate": "2025-02-02T00:00:00Z"
 }
 
 ### List course cohorts
-GET {{baseUrl}}/{{courseId}}/cohorts
+GET {{baseUrl}}/e69bc7b7-1eb6-4cc0-b41f-94989ae1f7df/cohorts
 Authorization: Bearer {{instructorToken}}
 
 ### Student Management ###
 
 ### List enrolled students
-GET {{baseUrl}}/{{courseId}}/students
+GET {{baseUrl}}/e69bc7b7-1eb6-4cc0-b41f-94989ae1f7df/students
 Authorization: Bearer {{instructorToken}}

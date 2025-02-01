@@ -4,22 +4,61 @@ import { Server } from 'socket.io';
 import CourseService from '../services/course.service';
 import ChatService from '../services/chat.service';
 import { PaymentService } from '../services/payment.service';
+import { uploadToCloudinary } from '../bg-services/file-upload.service';
 
 export default class CourseController {
   private courseService: CourseService;
 
-  constructor(private io: Server) {
+  constructor(io: Server) {
     const prisma = new PrismaClient();
-    const chatService = new ChatService(prisma, this.io); // Socket.IO instance to be injected
+    const chatService = new ChatService(prisma, io);
     const paymentService = new PaymentService();
     this.courseService = new CourseService(prisma, chatService, paymentService);
+
+    // Bind all methods to this instance
+    this.getCourses = this.getCourses.bind(this);
+    this.getCourse = this.getCourse.bind(this);
+    this.getCoursesByCategory = this.getCoursesByCategory.bind(this);
+    this.getCoursesByInstructor = this.getCoursesByInstructor.bind(this);
+    this.createCourse = this.createCourse.bind(this);
+    this.updateCourse = this.updateCourse.bind(this);
+    this.deleteCourse = this.deleteCourse.bind(this);
+    this.publishCourse = this.publishCourse.bind(this);
+    this.createCohort = this.createCohort.bind(this);
+    this.getCourseCohorts = this.getCourseCohorts.bind(this);
+    this.getCourseStudents = this.getCourseStudents.bind(this);
+    this.enrollStudent = this.enrollStudent.bind(this);
+    this.deferStudent = this.deferStudent.bind(this);
   }
 
   async createCourse(req: Request, res: Response) {
     try {
-      const { title, description, bannerImageUrl, isPaid, price, subCategoryIds } = req.body;
+      let { title, description, isPaid, price, categoryIds, subCategoryIds } = req.body;
       const instructorId = req.user.id;
-
+      const bannerImage = req.file;
+  
+      // Convert categoryIds to array if it's in JSON string form
+      if (typeof categoryIds === 'string') {
+        categoryIds = JSON.parse(categoryIds);
+      }
+      // Convert subCategoryIds if needed
+      if (typeof subCategoryIds === 'string') {
+        subCategoryIds = JSON.parse(subCategoryIds);
+      }
+      // Convert isPaid string to boolean if needed
+      if (typeof isPaid === 'string') {
+        isPaid = isPaid === 'true';
+      }
+      // Convert price to number if it's a string
+      if (typeof price === 'string') {
+        price = parseFloat(price);
+      }
+  
+      let bannerImageUrl;
+      if (bannerImage) {
+        bannerImageUrl = await uploadToCloudinary(bannerImage);
+      }
+  
       const course = await this.courseService.createCourse(
         title,
         description,
@@ -27,17 +66,18 @@ export default class CourseController {
         bannerImageUrl,
         isPaid,
         price,
+        categoryIds,
         subCategoryIds
       );
-
-       res.status(201).json({
+  
+      res.status(201).json({
         success: true,
-        data: course
+        data: course,
       });
     } catch (error: any) {
-       res.status(500).json({
+      res.status(500).json({
         success: false,
-        message: error.message || 'Failed to create course'
+        message: error.message || 'Failed to create course',
       });
     }
   }
@@ -147,24 +187,43 @@ export default class CourseController {
         });
         }
     }
-  async updateCourse(req: Request, res: Response) {
-    try {
-      const { courseId } = req.params;
-      const updateData = req.body;
-
-      const course = await this.courseService.updateCourse(courseId, updateData);
-
-       res.status(200).json({
-        success: true,
-        data: course
-      });
-    } catch (error: any) {
-       res.status(500).json({
-        success: false,
-        message: error.message || 'Failed to update course'
-      });
+    async updateCourse(req: Request, res: Response) {
+      try {
+        const { courseId } = req.params;
+        const updateData = req.body;
+        const bannerImage = req.file;
+    
+        // Convert category/subCategory arrays if they are JSON strings
+        if (typeof updateData.categoryIds === 'string') {
+          updateData.categoryIds = JSON.parse(updateData.categoryIds);
+        }
+        if (typeof updateData.subCategoryIds === 'string') {
+          updateData.subCategoryIds = JSON.parse(updateData.subCategoryIds);
+        }
+        if (typeof updateData.isPaid === 'string') {
+          updateData.isPaid = updateData.isPaid === 'true';
+        }
+        if (typeof updateData.price === 'string') {
+          updateData.price = parseFloat(updateData.price);
+        }      
+    
+        if (bannerImage) {
+          updateData.bannerImageUrl = await uploadToCloudinary(bannerImage);
+        }
+    
+        const course = await this.courseService.updateCourse(courseId, updateData);
+    
+        res.status(200).json({
+          success: true,
+          data: course,
+        });
+      } catch (error: any) {
+        res.status(500).json({
+          success: false,
+          message: error.message || 'Failed to update course',
+        });
+      }
     }
-  }
 
   async deleteCourse(req: Request, res: Response) {
     try {

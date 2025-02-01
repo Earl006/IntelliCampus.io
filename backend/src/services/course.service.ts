@@ -25,6 +25,7 @@ export default class CourseService {
     bannerImageUrl?: string,
     isPaid?: boolean,
     price?: number,
+    categoryIds?: string[],
     subCategoryIds?: string[]
   ) {
     const course = await this.prisma.course.create({
@@ -35,6 +36,11 @@ export default class CourseService {
         bannerImageUrl,
         isPaid: isPaid || false,
         price: price || 0,
+        categories: categoryIds
+          ? {
+              connect: categoryIds.map((cid) => ({ id: cid })),
+            }
+          : undefined,
         subCategories: subCategoryIds
           ? {
               connect: subCategoryIds.map((sid) => ({ id: sid })),
@@ -49,7 +55,7 @@ export default class CourseService {
   }
 
   async getCourse(courseId: string) {
-    return this.prisma.course.findUnique({
+    const course = await this.prisma.course.findUnique({
       where: { id: courseId },
       include: {
         instructor: true,
@@ -57,16 +63,19 @@ export default class CourseService {
         chatRooms: true,
       },
     });
+
+    return course;
   }
 
   async getPublishedCourses() {
-    return this.prisma.course.findMany({
+    const courses = await this.prisma.course.findMany({
       where: { isPublished: true },
       include: {
         instructor: true,
         subCategories: true,
       },
     });
+    return courses;
   }
 
   async getCoursesByInstructor(instructorId: string) {
@@ -95,6 +104,13 @@ export default class CourseService {
       subCategoryIds?: string[];
     }
   ) {
+
+    const existingCourse = await this.prisma.course.findUnique({
+      where: { id: courseId },
+    });
+    if (!existingCourse) {
+      throw new Error('Course not found');
+    }
     let subCatsConnect, subCatsDisconnect;
     if (data.subCategoryIds) {
       const existing = await this.prisma.course.findUnique({

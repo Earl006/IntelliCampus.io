@@ -1,39 +1,37 @@
 @baseUrl = http://localhost:3000/api
-@authToken = {{login.response.body.token}}
-@adminToken = {{adminLogin.response.body.token}}
+@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ1YWM0OWViLWJiMmMtNDMyZS1iMDk0LTMyZjFkYTZkYmYzNiIsImVtYWlsIjoiZWFybGpvZTA2QG91dGxvb2suY29tIiwicGhvbmVOdW1iZXIiOiIwNzExMjI0NTg1MyIsInJvbGUiOiJMRUFSTkVSIiwiaWF0IjoxNzM4MzMyMzI2LCJleHAiOjE3MzgzMzU5MjZ9.RWaZ9BBgESAhnGI-1e3Ep9C0irekOsOlbmjrTwki2DU
+@adminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjQ2ODgwZjkzLWMzYTUtNGZmNC04YjJjLTE1MDljMDEzNmE1MiIsImVtYWlsIjoiZWFybGpvZTA2QGdtYWlsLmNvbSIsInBob25lTnVtYmVyIjoiMDcxMTIyNzIyNTAiLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3MzgzMzIzNDYsImV4cCI6MTczODMzNTk0Nn0.P8K6yBNgsiF0VGeWTyRsXjCiLu46B49nz9_bK0xBLWY
 
 ### Variables for testing
-@testEmail = test@example.com
+@testEmail = earljo06@gmail.com
 @testPhone = +254712345678
 @testUserId = 123e4567-e89b-12d3-a456-426614174000
 
 ### Get auth token (normal user)
-# @name login
 POST {{baseUrl}}/auth/login
 Content-Type: application/json
 
 {
-    "email": "user@example.com",
-    "password": "password123"
+    "email": "earljoe06@outlook.com",
+    "password": "password"
 }
 
 ### Get auth token (admin user)
-# @name adminLogin
 POST {{baseUrl}}/auth/login
 Content-Type: application/json
 
 {
-    "email": "admin@example.com",
-    "password": "adminpass123"
+    "email": "earljoe06@gmail.com",
+    "password": "password"
 }
 
 ### Public Routes ###
 
 ### Get user by email
-GET {{baseUrl}}/users/{{testEmail}}
+GET {{baseUrl}}/users/earljoe06@outlook.com
 
 ### Get user by phone
-GET {{baseUrl}}/users/phone/{{testPhone}}
+GET {{baseUrl}}/users/phone/07112272250
 
 ### Protected User Routes ###
 
@@ -47,9 +45,8 @@ Authorization: Bearer {{authToken}}
 Content-Type: application/json
 
 {
-    "name": "Updated Name",
-    "bio": "New bio",
-    "phoneNumber": "+254712345678"
+    "bio": "My bio bana"
+    
 }
 
 ### Change password
@@ -58,7 +55,7 @@ Authorization: Bearer {{authToken}}
 Content-Type: application/json
 
 {
-    "newPassword": "newPassword123"
+    "newPassword": "password"
 }
 
 ### Deactivate own account
@@ -92,31 +89,31 @@ GET {{baseUrl}}/users/admin/instructor-requests
 Authorization: Bearer {{adminToken}}
 
 ### Get specific instructor
-GET {{baseUrl}}/users/instructor/{{testUserId}}
+GET {{baseUrl}}/users/instructor/d5ac49eb-bb2c-432e-b094-32f1da6dbf36
 Authorization: Bearer {{adminToken}}
 
 ### Approve instructor request
-POST {{baseUrl}}/users/admin/approve-instructor/{{testUserId}}
+POST {{baseUrl}}/users/admin/approve-instructor/d5ac49eb-bb2c-432e-b094-32f1da6dbf36
 Authorization: Bearer {{adminToken}}
 
 ### Reject instructor request
-POST {{baseUrl}}/users/admin/reject-instructor/{{testUserId}}
+POST {{baseUrl}}/users/admin/reject-instructor/d5ac49eb-bb2c-432e-b094-32f1da6dbf36
 Authorization: Bearer {{adminToken}}
 
 ### Assign role
-PUT {{baseUrl}}/users/admin/assign-role/{{testUserId}}
+PUT {{baseUrl}}/users/admin/assign-role/d5ac49eb-bb2c-432e-b094-32f1da6dbf36
 Authorization: Bearer {{adminToken}}
 Content-Type: application/json
 
 {
-    "role": "INSTRUCTOR"
+    "role": "LEARNER"
 }
 
 ### Delete user account
-DELETE {{baseUrl}}/users/admin/delete/{{testUserId}}
+DELETE {{baseUrl}}/users/admin/delete/d5ac49eb-bb2c-432e-b094-32f1da6dbf36
 Authorization: Bearer {{adminToken}}
 
 ### Activate user account
-POST {{baseUrl}}/users/admin/activate/{{testUserId}}
+POST {{baseUrl}}/users/admin/activate/d5ac49eb-bb2c-432e-b094-32f1da6dbf36
 Authorization: Bearer {{adminToken}}
 

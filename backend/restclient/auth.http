@@ -3,11 +3,11 @@ POST http://localhost:3000/api/auth/register
 Content-Type: application/json
     
     {
-        "firstName": "Earljoe",
-        "lastName": "Wamukoya",
-        "email": "earljoe06@gmail.com",
+        "firstName": "John",
+        "lastName": "Doe",
+        "email": "rightmencustomz@gmail.com",
         "password": "password",
-        "phoneNumber": "07112272250"
+        "phoneNumber": "0106326627"
     }
     
 ###Login a user
