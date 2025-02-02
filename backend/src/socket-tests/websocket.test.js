@@ -30,22 +30,21 @@ async function runSocketTest() {
     function joinRooms() {
       courses.forEach(course => {
         course.chatRooms?.forEach(room => {
-          // Match the exact room format used in ChatService
-          const courseRoomId = `course_${room.id}`;
-          if (!joinedRooms.has(courseRoomId)) {
-            DEBUG && console.log(`Joining course room: ${courseRoomId}`);
-            socket.emit('joinCourseRoom', room.id);
-            joinedRooms.add(courseRoomId);
+          const roomId = room.id;
+          if (!joinedRooms.has(roomId)) {
+            DEBUG && console.log(`Joining course room: ${roomId}`);
+            socket.emit('joinCourseRoom', roomId);
+            joinedRooms.add(roomId);
           }
         });
     
         course.cohorts?.forEach(cohort => {
           cohort.chatRooms?.forEach(room => {
-            const cohortRoomId = `cohort_${room.id}`;
-            if (!joinedRooms.has(cohortRoomId)) {
-              DEBUG && console.log(`Joining cohort room: ${cohortRoomId}`);
-              socket.emit('joinCohortRoom', room.id);
-              joinedRooms.add(cohortRoomId);
+            const roomId = room.id;
+            if (!joinedRooms.has(roomId)) {
+              DEBUG && console.log(`Joining cohort room: ${roomId}`);
+              socket.emit('joinCohortRoom', roomId);
+              joinedRooms.add(roomId);
             }
           });
         });
