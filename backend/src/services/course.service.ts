@@ -250,15 +250,15 @@ export default class CourseService {
     }
   
     // Check if student already enrolled
-    // const existingEnrollment = await this.prisma.enrollment.findFirst({
-    //   where: {
-    //     userId: studentId,
-    //     courseId,
-    //   },
-    // });
-    // if (existingEnrollment) {
-    //   throw new Error('Student is already enrolled in this course');
-    // }
+    const existingEnrollment = await this.prisma.enrollment.findFirst({
+      where: {
+        userId: studentId,
+        courseId,
+      },
+    });
+    if (existingEnrollment) {
+      throw new Error('Student is already enrolled in this course');
+    }
   
     // If course is paid, handle payment
     if (course.isPaid) {
