@@ -1,31 +1,28 @@
 @baseUrl = http://localhost:3000/api
 @materialId = 123e4567-e89b-12d3-a456-426614174000
 @courseId = 987e6543-e21b-12d3-a456-426614174000
+@authToken= eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjE5YjdhZGVjLTJkNjktNDJiMS05ODc2LTQ0MmRlNzZhOGNlNSIsImVtYWlsIjoicmlnaHRtZW5jdXN0b216QGdtYWlsLmNvbSIsInBob25lTnVtYmVyIjoiMDEwNjMyNjYyNyIsInJvbGUiOiJMRUFSTkVSIiwiaWF0IjoxNzM4NTkxMDg4LCJleHAiOjE3Mzg1OTQ2ODh9.cLGyaxvOypH0Lce6BTOB4UHvyGvpnAnkKJ136qr1O3w
 
-### Get auth token
-# @name login
-POST {{baseUrl}}/auth/login
+### STUDENT TOKEN
+POST http://localhost:3000/api/auth/login
 Content-Type: application/json
 
 {
-    "email": "test@example.com",
-    "password": "password123"
+    "email": "rightmencustomz@gmail.com",
+    "password": "password"
 }
-
-@authToken = {{login.response.body.token}}
-
 ### Public Routes ###
 
 ### Get comments for material
-GET {{baseUrl}}/comment-review/materials/{{materialId}}/comments
+GET {{baseUrl}}/comment-review/materials/96031c5a-f0dd-4d68-a46b-cc43d3b6fda6/comments
 
 ### Get reviews for course
-GET {{baseUrl}}/comment-review/courses/{{courseId}}/reviews
+GET {{baseUrl}}/comment-review/courses/e69bc7b7-1eb6-4cc0-b41f-94989ae1f7df/reviews
 
 ### Protected Routes ###
 
 ### Add comment to material
-POST {{baseUrl}}/comment-review/materials/{{materialId}}/comments
+POST {{baseUrl}}/comment-review/materials/96031c5a-f0dd-4d68-a46b-cc43d3b6fda6/comments
 Authorization: Bearer {{authToken}}
 Content-Type: application/json
 
@@ -34,7 +31,7 @@ Content-Type: application/json
 }
 
 ### Add review to course
-POST {{baseUrl}}/comment-review/courses/{{courseId}}/reviews
+POST {{baseUrl}}/comment-review/courses/e69bc7b7-1eb6-4cc0-b41f-94989ae1f7df/reviews
 Authorization: Bearer {{authToken}}
 Content-Type: application/json
 
