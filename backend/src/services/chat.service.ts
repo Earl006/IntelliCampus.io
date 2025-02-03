@@ -95,26 +95,24 @@ export default class ChatService {
       orderBy: { sentAt: 'asc' },
     });
   }
-
-  async notifyRoomMembership(roomId: string, userId: string, action: 'joined' | 'left' | 'pending') {
-    console.log(`[ChatService] Emitting ${action} event for user ${userId} in room ${roomId}`);
-    
-    const event = {
-      roomId,
-      userId,
-      action,
-      timestamp: new Date().toISOString()
-    };
+  hasTestAccess(socketId: string): boolean {
+    return this.testSockets.has(socketId);
+  }
   
-    // Use consistent room prefixes
-    const courseRoom = `course_${roomId}`;
-    const cohortRoom = `cohort_${roomId}`;
-    
-    console.log(`[ChatService] Broadcasting to rooms: ${courseRoom}, ${cohortRoom}`);
-    this.io.to(courseRoom).emit('membershipChange', event);
-    this.io.to(cohortRoom).emit('membershipChange', event);
   
-    console.log('[ChatService] Event emitted:', event);
+  async notifyRoomMembership(roomId: string, userId: string, action: 'joined' | 'left') {
+    const event = { roomId, userId, action, timestamp: new Date().toISOString() };
+    
+    // Get all room prefixes to emit to
+    const roomPrefixes = ['course_', 'cohort_'];
+    
+    roomPrefixes.forEach(prefix => {
+      const prefixedRoom = `${prefix}${roomId}`;
+      console.log(`[ChatService] Emitting to room: ${prefixedRoom}`);
+      
+      // Broadcast to room and any test sockets
+      this.io.in(prefixedRoom).emit('membershipChange', event);
+    });
   }
 
 
