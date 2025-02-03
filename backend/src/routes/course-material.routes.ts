@@ -6,7 +6,7 @@ import { Role } from '@prisma/client';
 
 // Configure multer for file uploads
 const storage = multer.memoryStorage();
-const upload = multer({ 
+const upload = multer({
   storage,
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB limit
@@ -20,7 +20,7 @@ const courseMaterialController = new CourseMaterialController();
 // All routes require authentication
 router.use(authenticateJWT);
 
-// Public routes (authenticated users)
+// Public routes (for authenticated users)
 router.get('/course/:courseId', courseMaterialController.getMaterialsByCourse);
 
 // Protected routes (instructors only)

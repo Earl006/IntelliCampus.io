@@ -7,6 +7,12 @@ export default class CourseMaterialController {
 
   constructor() {
     this.courseMaterialService = new CourseMaterialService();
+
+    // Bind methods so "this" remains valid
+    this.createMaterial = this.createMaterial.bind(this);
+    this.updateMaterial = this.updateMaterial.bind(this);
+    this.deleteMaterial = this.deleteMaterial.bind(this);
+    this.getMaterialsByCourse = this.getMaterialsByCourse.bind(this);
   }
 
   async createMaterial(req: Request, res: Response) {
@@ -68,12 +74,12 @@ export default class CourseMaterialController {
   async deleteMaterial(req: Request, res: Response) {
     try {
       const { materialId } = req.params;
-      
+
       const material = await this.courseMaterialService.deleteMaterial(materialId);
 
        res.status(200).json({
         success: true,
-        data: material
+        message: 'Course Material deleted'
       });
     } catch (error: any) {
        res.status(500).json({
@@ -86,7 +92,7 @@ export default class CourseMaterialController {
   async getMaterialsByCourse(req: Request, res: Response) {
     try {
       const { courseId } = req.params;
-      
+
       const materials = await this.courseMaterialService.getMaterialsByCourse(courseId);
 
        res.status(200).json({

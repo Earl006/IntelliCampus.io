@@ -1,36 +1,33 @@
 @baseUrl = http://localhost:3000/api/materials
-@courseId = 123e4567-e89b-12d3-a456-426614174000
 @materialId = 987e6543-e21b-12d3-a456-426614174000
+@instructorToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ1YWM0OWViLWJiMmMtNDMyZS1iMDk0LTMyZjFkYTZkYmYzNiIsImVtYWlsIjoiZWFybGpvZTA2QG91dGxvb2suY29tIiwicGhvbmVOdW1iZXIiOiIwNzExMjI0NTg1MyIsInJvbGUiOiJJTlNUUlVDVE9SIiwiaWF0IjoxNzM4NTkwMjU3LCJleHAiOjE3Mzg1OTM4NTd9.9U8WsagC2TrPb7EttDWHuEIdsAUF2REPmBS5p-DwyYg
 
-### Get auth tokens
-# @name loginInstructor
+### INSTRUCTOR TOKEN
 POST http://localhost:3000/api/auth/login
 Content-Type: application/json
 
 {
-    "email": "instructor@example.com",
-    "password": "password123"
+    "email": "earljoe06@outlook.com",
+    "password": "password"
 }
-
-@instructorToken = {{loginInstructor.response.body.token}}
 
 ### Public Routes (Requires Authentication) ###
 
 ### Get materials for course
-GET {{baseUrl}}/course/{{courseId}}
+GET {{baseUrl}}/course/e69bc7b7-1eb6-4cc0-b41f-94989ae1f7df
 Authorization: Bearer {{instructorToken}}
 
 ### Protected Routes (Instructor Only) ###
 
 ### Create material with file
-POST {{baseUrl}}/course/{{courseId}}
+POST {{baseUrl}}/course/e69bc7b7-1eb6-4cc0-b41f-94989ae1f7df
 Authorization: Bearer {{instructorToken}}
 Content-Type: multipart/form-data; boundary=----WebKitFormBoundary
  
 ------WebKitFormBoundary
 Content-Disposition: form-data; name="title"
 
-Sample PDF Material
+Advanced Concepts in Cypress
 ------WebKitFormBoundary
 Content-Disposition: form-data; name="type"
 
@@ -42,16 +39,16 @@ Content-Disposition: form-data; name="week"
 ------WebKitFormBoundary
 Content-Disposition: form-data; name="day"
 
-1
+2
 ------WebKitFormBoundary
 Content-Disposition: form-data; name="files"; filename="sample.pdf"
 Content-Type: application/pdf
 
-< ./sample.pdf
+< /home/earljoe/Downloads/cypress2.pdf
 ------WebKitFormBoundary--
 
 ### Update material
-PUT {{baseUrl}}/{{materialId}}
+PUT {{baseUrl}}/3dd4fc61-75ff-4f71-b178-2672d523a5fe
 Authorization: Bearer {{instructorToken}}
 Content-Type: application/json
 
@@ -62,5 +59,5 @@ Content-Type: application/json
 }
 
 ### Delete material
-DELETE {{baseUrl}}/{{materialId}}
+DELETE {{baseUrl}}/3dd4fc61-75ff-4f71-b178-2672d523a5fe
 Authorization: Bearer {{instructorToken}}
