@@ -1,0 +1,30 @@
+.fade-hidden {
+    opacity: 0;
+    transition: all 1s;
+    
+    &.fade-left {
+      transform: translateX(-100%);
+    }
+    
+    &.fade-right {
+      transform: translateX(100%);
+    }
+    
+    &.show {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  
+  .animate-spin-slow {
+    animation: spin 20s linear infinite;
+  }
+  
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }

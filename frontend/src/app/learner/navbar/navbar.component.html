@@ -1,0 +1,92 @@
+<nav class="fixed w-full bg-white shadow-sm z-50">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between h-16 items-center">
+      <!-- Logo -->
+      <div class="flex-shrink-0">
+        <a href="/" class="font-montserrat font-semibold text-gray-700 text-xl">
+          IntelliCampus
+        </a>
+      </div>
+
+      <!-- Desktop Navigation -->
+      <div class="hidden md:flex space-x-8">
+        <a routerLink="/" class="nav-link">Home</a>
+        <a routerLink="/about" class="nav-link">About IntelliCampus</a>
+        <a routerLink="/courses" class="nav-link">Explore Courses</a>
+        <a routerLink="/contact" class="nav-link">Contact</a>
+      </div>
+
+      <!-- Right Section -->
+      <div class="flex items-center space-x-4">
+        <!-- Search Button -->
+        <button (click)="toggleSearch()" class="p-2 hover:bg-gray-100 rounded-full">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </button>
+
+        <!-- Mobile Menu Button -->
+        <button (click)="toggleMenu()" class="md:hidden p-2 hover:bg-gray-100 rounded-full">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path *ngIf="!isMenuOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            <path *ngIf="isMenuOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+
+        <!-- User Menu -->
+        <div class="relative">
+          <button (click)="toggleDropdown()" class="flex items-center space-x-2">
+            <div *ngIf="!isLoggedIn" class="p-2 hover:bg-gray-100 rounded-full">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            </div>
+            <div *ngIf="isLoggedIn" class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center">
+              {{ userInitials }}
+            </div>
+          </button>
+
+          <!-- Dropdown Menu -->
+          <div *ngIf="showDropdown" class="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
+            <div class="py-1">
+              <ng-container *ngIf="!isLoggedIn">
+                <a routerLink="/auth/login" class="dropdown-item">Login</a>
+                <a routerLink="/auth/register" class="dropdown-item">Register</a>
+              </ng-container>
+              <ng-container *ngIf="isLoggedIn">
+                <a routerLink="/profile" class="dropdown-item">Edit Profile</a>
+                <button (click)="logout()" class="dropdown-item w-full text-left">Logout</button>
+              </ng-container>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile Navigation Menu -->
+    <div *ngIf="isMenuOpen" class="md:hidden">
+      <div class="px-2 pt-2 pb-3 space-y-1">
+        <a routerLink="/" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">Home</a>
+        <a routerLink="/about" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">About IntelliCampus</a>
+        <a routerLink="/courses" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">Explore Courses</a>
+        <a routerLink="/contact" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">Contact</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search Overlay -->
+  <div *ngIf="isSearchOpen" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-50">
+    <div class="max-w-3xl mx-auto mt-20 px-4">
+      <div class="bg-white rounded-lg shadow-xl p-4">
+        <div class="flex items-center">
+          <input type="text" placeholder="Search..." class="flex-1 p-2 border-none focus:ring-0">
+          <button (click)="toggleSearch()" class="p-2 hover:bg-gray-100 rounded-full ml-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
