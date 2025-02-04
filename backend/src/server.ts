@@ -6,31 +6,30 @@ import ChatService from './services/chat.service';
 import CourseService from './services/course.service';
 import { PaymentService } from './services/payment.service';
 
+// Configure port
 const port = process.env.PORT || 3000;
+
+// Create HTTP server
 const httpServer = createServer(app);
 
-// Create Socket.IO instance after HTTP server
-const io = new Server(httpServer, {
-  cors: {
-    origin: process.env.CLIENT_URL || "http://localhost:3000",
-    methods: ["GET", "POST"],
-    credentials: true
-  }
-});
+// Configure Socket.IO without CORS (handled in app.ts)
+const io = new Server(httpServer);
 
-// Setup authentication before creating services
+// Socket authentication
 io.use(authenticateSocket);
 
+// Initialize services
 const chatService = new ChatService(prisma, io);
 const paymentService = new PaymentService();
 const courseService = new CourseService(prisma, chatService, paymentService);
 
-// Setup socket handlers after authentication
-chatService.setupSocketHandlers();
+// Setup socket handlers
 chatService.setupSocketHandlers();
 
+// Start server
 httpServer.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
 
+// Export instances
 export { io, chatService, courseService };

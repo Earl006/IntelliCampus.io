@@ -16,7 +16,17 @@ export default class UserController {
       res.status(400).json({ message: error.message || error });
     }
   }
-
+  async getUserNameById(req: Request, res: Response) {
+    try {
+      const user = await userService.getUserNameById(req.body.id);
+      res.status(200).json({
+        success: true,
+        data:user
+      });
+    } catch (error: any) {
+      res.status(400).json({ message: error.message || error });
+    }
+  }
   async getUserByEmail(req: Request, res: Response) {
     try {
       const user = await userService.getUserByEmail(req.params.email);

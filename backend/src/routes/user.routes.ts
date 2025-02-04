@@ -9,7 +9,7 @@ const userController = new UserController();
 // Public routes
 router.get('/:email', userController.getUserByEmail);
 router.get('/phone/:phoneNumber', userController.getUserByPhoneNumber);
-
+router.post('/name', userController.getUserNameById);
 // Protected routes - require authentication
 router.use(authenticateJWT);
 

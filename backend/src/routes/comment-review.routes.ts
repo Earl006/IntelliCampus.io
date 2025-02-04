@@ -8,6 +8,7 @@ const commentReviewController = new CommentReviewController();
 //Public routes
 router.get('/materials/:materialId/comments', commentReviewController.getCommentsForMaterial);
 router.get('/courses/:courseId/reviews', commentReviewController.getReviewsForCourse);
+router.get('/reviews', commentReviewController.getAllReviews);
 
 // All routes require authentication
 router.use(authenticateJWT);

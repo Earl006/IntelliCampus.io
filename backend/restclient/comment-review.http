@@ -19,6 +19,9 @@ GET {{baseUrl}}/comment-review/materials/96031c5a-f0dd-4d68-a46b-cc43d3b6fda6/co
 ### Get reviews for course
 GET {{baseUrl}}/comment-review/courses/e69bc7b7-1eb6-4cc0-b41f-94989ae1f7df/reviews
 
+###GET ALL REVIEWS
+GET {{baseUrl}}/comment-review/reviews
+
 ### Protected Routes ###
 
 ### Add comment to material

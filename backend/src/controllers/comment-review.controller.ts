@@ -10,6 +10,7 @@ export default class CommentReviewController {
     // Bind each method so “this” stays valid
     this.addComment = this.addComment.bind(this);
     this.getCommentsForMaterial = this.getCommentsForMaterial.bind(this);
+    this.getAllReviews = this.getAllReviews.bind(this);
     this.addReview = this.addReview.bind(this);
     this.getReviewsForCourse = this.getReviewsForCourse.bind(this);
   }
@@ -32,6 +33,17 @@ export default class CommentReviewController {
     }
   }
 
+  async getAllReviews(req: Request, res: Response) {
+    try {
+      const reviews = await this.commentReviewService.getAllReviews();
+       res.status(200).json({ success: true, data: reviews });
+    } catch (error: any) {
+       res.status(500).json({
+        success: false,
+        message: error.message || 'Failed to fetch reviews'
+      });
+    }
+  }
   async getCommentsForMaterial(req: Request, res: Response) {
     try {
       const { materialId } = req.params;

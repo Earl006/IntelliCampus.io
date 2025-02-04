@@ -43,6 +43,12 @@ export default class CommentReviewService {
     return comments;
   }
 
+  async getAllReviews() {
+    const reviews = await prisma.review.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
+    return reviews;
+  }
   /**
    * Adds a new course review with a max rating of 5.
    * @param {string} courseId - The course ID being reviewed.

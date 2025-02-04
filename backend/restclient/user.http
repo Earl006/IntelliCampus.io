@@ -33,6 +33,14 @@ GET {{baseUrl}}/users/earljoe06@outlook.com
 ### Get user by phone
 GET {{baseUrl}}/users/phone/07112272250
 
+###GET USER NAME BY ID
+POST {{baseUrl}}/users/name
+Content-Type: application/json
+
+{
+    "id": "19b7adec-2d69-42b1-9876-442de76a8ce5"
+}
+
 ### Protected User Routes ###
 
 ### Get own profile

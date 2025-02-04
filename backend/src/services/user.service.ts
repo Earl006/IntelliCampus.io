@@ -10,7 +10,11 @@ export default class UserService {
   async getUserById(id: string): Promise<User | null> {
     return prisma.user.findUnique({ where: { id } });
   }
-
+  async getUserNameById(id: string): Promise<string | null> {
+    const user = await prisma.user.findUnique({ where: { id } });
+    const name = `${user?.firstName} ${user?.lastName}`;
+    return name;
+  }
   async getUserByEmail(email: string): Promise<User | null> {
     return prisma.user.findUnique({ where: { email } });
   }
