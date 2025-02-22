@@ -167,6 +167,9 @@ export default class UserService {
         id: userId,
         role: "INSTRUCTOR",
       },
+      include: {
+        coursesCreated: true,
+      },
     });
   }
 

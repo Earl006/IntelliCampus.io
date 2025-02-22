@@ -10,6 +10,8 @@ const userController = new UserController();
 router.get('/:email', userController.getUserByEmail);
 router.get('/phone/:phoneNumber', userController.getUserByPhoneNumber);
 router.post('/name', userController.getUserNameById);
+router.get('/instructor/:userId', userController.getInstructorByUserId);
+
 // Protected routes - require authentication
 router.use(authenticateJWT);
 
@@ -21,7 +23,6 @@ router.post('/profile/deactivate', userController.deactivateAccount);
 
 // Instructor related routes - learners can request, admin can view
 router.post('/instructor/request', userController.requestInstructorRole);
-router.get('/instructor/:userId', requireRole([Role.ADMIN]), userController.getInstructorByUserId);
 
 // Admin only routes - require ADMIN role
 router.use('/admin', requireRole([Role.ADMIN]));

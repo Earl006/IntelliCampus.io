@@ -118,9 +118,9 @@ import { trigger, transition, style, animate } from '@angular/animations';
                 <h3 class="text-xl font-bold text-gray-800 mb-3 line-clamp-2 group-hover:text-blue-600 transition-colors">
                   {{ course.title }}
                 </h3>
-                <p class="text-gray-600 mb-6 line-clamp-2">
+                <!-- <p class="text-gray-600 mb-6 line-clamp-2">
                   {{ course.description }}
-                </p>
+                </p> -->
 
                 <!-- Instructor Section -->
                 <div class="flex items-center justify-between py-4 border-t border-gray-100">

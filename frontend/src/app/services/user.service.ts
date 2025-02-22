@@ -16,6 +16,7 @@ export interface User {
   earnings: number;
   createdAt: Date;
   updatedAt: Date;
+  coursesCreated?: string[];
 }
 export interface ApiResponse<T> {
   success: boolean;
