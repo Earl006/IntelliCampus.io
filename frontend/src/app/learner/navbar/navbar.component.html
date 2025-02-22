@@ -34,7 +34,7 @@
         </button>
 
         <!-- User Menu -->
-        <div class="relative">
+        <div class="relative dropdown-container">
           <button (click)="toggleDropdown()" class="flex items-center space-x-2">
             <div *ngIf="!isLoggedIn" class="p-2 hover:bg-gray-100 rounded-full">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -50,12 +50,12 @@
           <div *ngIf="showDropdown" class="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
             <div class="py-1">
               <ng-container *ngIf="!isLoggedIn">
-                <a routerLink="/auth/login" class="dropdown-item">Login</a>
-                <a routerLink="/auth/register" class="dropdown-item">Register</a>
+                <a routerLink="/auth/login" class="dropdown-item" (click)="closeDropdown()">Login</a>
+                <a routerLink="/auth/register" class="dropdown-item" (click)="closeDropdown()">Register</a>
               </ng-container>
               <ng-container *ngIf="isLoggedIn">
-                <a routerLink="/profile" class="dropdown-item">Edit Profile</a>
-                <button (click)="logout()" class="dropdown-item w-full text-left">Logout</button>
+                <a routerLink="/profile" class="dropdown-item" (click)="closeDropdown()">Edit Profile</a>
+                <button (click)="logout(); closeDropdown()" class="dropdown-item w-full text-left">Logout</button>
               </ng-container>
             </div>
           </div>

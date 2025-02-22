@@ -74,7 +74,7 @@
             <!-- Submit Button -->
             <button 
               type="submit" 
-              class="w-full bg-green-500 text-white py-2 rounded-lg hover:bg-green-600 transition-all duration-300 flex items-center justify-center"
+              class="w-full bg-black text-white py-2 rounded-lg hover:bg-gray-800 transition-all duration-300 flex items-center justify-center"
               [disabled]="isLoading">
               <span *ngIf="!isLoading">Login</span>
               <span *ngIf="isLoading" class="flex items-center">
@@ -89,7 +89,7 @@
           <!-- Signup Link -->
           <p class="mt-6 text-center text-gray-600">
             Don't have an account? 
-            <a routerLink="/auth/signup" class="text-blue-600 hover:underline font-medium cursor-pointer">Sign Up</a>
+            <a routerLink="/auth/register" class="text-blue-600 hover:underline font-medium cursor-pointer">Sign Up</a>
           </p>
         </div>
         

@@ -11,12 +11,12 @@ import { RouterModule } from '@angular/router';
   <div class="min-h-screen relative overflow-hidden bg-white">
     <!-- Background with subtle overlay -->
     <div class="absolute inset-0">
-      <img src="/assets/bg.jpg" alt="Background" class="w-full h-full object-cover opacity-5">
-      <div class="absolute inset-0 bg-white/10"></div>
+      <img src="/assets/bg.jpg" alt="Background" class="w-full h-full object-cover opacity-10">
+      <!-- <div class="absolute inset-0 bg-white/10"></div> -->
     </div>
     
-    <!-- Two Column Container -->
-    <div class="relative flex items-center justify-center min-h-screen px-4">
+    <!-- Two Column Container (Floating effect) -->
+    <div class="relative flex items-center justify-center min-h-[calc(100vh-64px)] mt-16 px-4">
       <div class="flex flex-col md:flex-row bg-white rounded-2xl shadow-2xl max-w-4xl w-full overflow-hidden">
         
         <!-- Left Column: Contact Form -->

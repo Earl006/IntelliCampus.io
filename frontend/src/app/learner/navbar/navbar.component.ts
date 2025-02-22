@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
@@ -11,7 +11,7 @@ import { RouterModule } from '@angular/router';
 })
 export class NavbarComponent implements OnInit {
   isLoggedIn = false;
-  userInitials = '';
+  userInitials = 'IC';
   showDropdown = false;
   isMenuOpen = false;
   isSearchOpen = false;
@@ -31,14 +31,28 @@ export class NavbarComponent implements OnInit {
     this.showDropdown = !this.showDropdown;
   }
 
+  closeDropdown() {
+    this.showDropdown = false;
+  }
+
   logout() {
     // this.authService.logout();
   }
+
   toggleMenu() {
     this.isMenuOpen = !this.isMenuOpen;
   }
 
   toggleSearch() {
     this.isSearchOpen = !this.isSearchOpen;
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    // if the click is outside the dropdown container, close it
+    if (this.showDropdown && !target.closest('.dropdown-container')) {
+      this.closeDropdown();
+    }
   }
 }
