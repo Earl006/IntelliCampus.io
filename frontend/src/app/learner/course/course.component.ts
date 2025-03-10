@@ -1,164 +1,207 @@
-import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, RouterModule } from '@angular/router';
-import { CommonModule } from '@angular/common';
-import { CourseService, Course } from '../../services/course.service';
+import {
+  Component,
+  OnInit
+} from '@angular/core';
+import {
+  ActivatedRoute
+} from '@angular/router';
+import {
+  CommonModule
+} from '@angular/common';
+import {
+  CourseService,
+  Course
+} from '../../services/course.service';
 import { trigger, transition, style, animate } from '@angular/animations';
+import { RouterModule } from '@angular/router';
+import { DatePipe } from '@angular/common';
 
 @Component({
   selector: 'app-course',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, DatePipe],
+  animations: [
+    trigger('fadeIn', [
+      transition(':enter', [
+        style({ opacity: 0, transform: 'translateY(10px)' }),
+        animate('400ms ease-out', style({ opacity: 1, transform: 'translateY(0)' }))
+      ])
+    ])
+  ],
   template: `
- <div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100" [@fadeIn]>
-      <!-- Main Content -->
-      <main class="py-12">
-        <div class="max-w-7xl mt-16 mx-auto px-4">
-          <!-- Back Navigation -->
-          <button routerLink="/courses" 
-                  class="group inline-flex items-center text-gray-600 hover:text-black transition-colors mb-8">
-            <svg class="w-5 h-5 mr-2 transform group-hover:-translate-x-1 transition-transform" 
-                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7 7-7"/>
-            </svg>
-            Back to Courses
-          </button>
+    <main class="min-h-screen bg-white relative">
+      <!-- Background with subtle overlay -->
+      <div class="absolute inset-0 z-0">
+        <img src="/assets/bg.jpg" alt="background" class="w-full h-full object-cover opacity-5">
+      </div>
 
+      <!-- Header Section -->
+      <section class="relative py-16 z-10">
+        <div class="container mx-auto px-4">
+          <div class="flex items-center gap-2 mb-4 mt-">
+            <a routerLink="/courses" class="text-gray-500 hover:text-black flex items-center">
+              <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+              </svg>
+              Back to Courses
+            </a>
+          </div>
+          <!-- <h1 class="text-3xl md:text-4xl font-bold text-gray-900">Course Details</h1> -->
+        </div>
+      </section>
+
+      <section class="relative pb-20 z-10">
+        <div class="container mx-auto px-4">
           <!-- Loading State -->
-          <div *ngIf="isLoading" class="flex justify-center items-center h-96">
-            <div class="animate-pulse space-y-8">
-              <div class="h-64 w-full bg-gray-200 rounded-2xl"></div>
-              <div class="space-y-4">
-                <div class="h-8 w-3/4 bg-gray-200 rounded-xl"></div>
-                <div class="h-4 w-full bg-gray-200 rounded-xl"></div>
-                <div class="h-4 w-2/3 bg-gray-200 rounded-xl"></div>
+          <div *ngIf="isLoading" class="max-w-4xl mx-auto" @fadeIn>
+            <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+              <div class="animate-pulse">
+                <!-- Banner Skeleton -->
+                <div class="h-64 bg-gray-200"></div>
+                
+                <!-- Price and Categories -->
+                <div class="px-8 py-4 border-b border-gray-100">
+                  <div class="flex justify-between items-center mb-3">
+                    <div class="h-4 bg-gray-200 rounded w-24"></div>
+                    <div class="h-6 bg-gray-200 rounded-full w-20"></div>
+                  </div>
+                  <div class="flex flex-wrap gap-2">
+                    <div class="h-6 bg-gray-200 rounded-full w-16"></div>
+                    <div class="h-6 bg-gray-200 rounded-full w-20"></div>
+                    <div class="h-6 bg-gray-200 rounded-full w-24"></div>
+                  </div>
+                </div>
+                
+                <!-- Content Skeleton -->
+                <div class="p-8">
+                  <div class="h-8 bg-gray-200 rounded w-3/4 mb-6"></div>
+                  <div class="space-y-3 mb-8">
+                    <div class="h-4 bg-gray-200 rounded w-full"></div>
+                    <div class="h-4 bg-gray-200 rounded w-full"></div>
+                    <div class="h-4 bg-gray-200 rounded w-2/3"></div>
+                  </div>
+                  
+                  <div class="flex items-center justify-between py-4 border-t border-gray-100">
+                    <div class="flex items-center gap-4">
+                      <div class="w-12 h-12 bg-gray-200 rounded-full"></div>
+                      <div class="space-y-2">
+                        <div class="h-4 bg-gray-200 rounded w-32"></div>
+                        <div class="h-3 bg-gray-200 rounded w-24"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="px-8 pb-8">
+                  <div class="h-12 bg-gray-200 rounded-xl w-full"></div>
+                </div>
               </div>
             </div>
           </div>
 
           <!-- Error State -->
-          <div *ngIf="error && !isLoading" 
-               class="flex flex-col items-center justify-center h-96 bg-white rounded-2xl shadow-lg p-8">
-            <svg class="w-16 h-16 text-red-500 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+          <div *ngIf="!isLoading && error" class="max-w-4xl mx-auto text-center py-16" @fadeIn>
+            <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
-            <h3 class="text-xl font-semibold text-gray-900 mb-2">Unable to Load Course</h3>
-            <p class="text-gray-600 text-center">{{ error }}</p>
+            <h3 class="text-xl font-semibold text-gray-900 mb-2">Oops! Something went wrong</h3>
+            <p class="text-gray-600 mb-6">{{ error }}</p>
+            <button (click)="loadCourse()" 
+                    class="px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-900 transition-all duration-200">
+              Try Again
+            </button>
           </div>
 
           <!-- Course Content -->
-          <div *ngIf="course && !isLoading && !error" 
-               class="bg-white rounded-3xl shadow-xl overflow-hidden">
-            <!-- Hero Section -->
-            <div class="relative h-96">
-              <div class="absolute inset-0 bg-gradient-to-r" 
-                   [ngClass]="course.isPaid ? 'from-blue-600 to-purple-600' : 'from-teal-500 to-emerald-500'">
-              </div>
-              <img [src]="course.bannerImageUrl || '/assets/course-default.jpg'" 
-                   [alt]="course.title" 
-                   class="w-full h-full object-cover mix-blend-multiply opacity-90">
-              <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-              
-              <!-- Course Title Section -->
-              <div class="absolute bottom-0 left-0 right-0 p-8 text-white">
-                <div class="max-w-3xl">
-                  <!-- Categories -->
-                  <div class="flex flex-wrap gap-2 mb-4">
-                    <span *ngFor="let sub of course.subCategories" 
-                          class="px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-sm">
-                      {{ sub.name }}
-                    </span>
-                  </div>
-                  
-                  <h1 class="text-4xl font-bold mb-4">{{ course.title }}</h1>
-                  
-                  <!-- Course Meta -->
-                  <div class="flex items-center gap-6 text-white/90">
-                    <div class="flex items-center">
-                      <svg class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                      </svg>
-                      <span>Updated {{ course.updatedAt | date:'mediumDate' }}</span>
-                    </div>
-                    <div class="flex items-center">
-                      <svg class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
-                      </svg>
-                      <span>{{ course.isPaid ? (course.price | currency:'KES':'symbol-narrow') : 'Free' }}</span>
-                    </div>
-                  </div>
+          <div *ngIf="!isLoading && !error && course" class="max-w-4xl mx-auto" @fadeIn>
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 border border-gray-100">
+              <!-- Course Banner -->
+              <div class="relative h-64 overflow-hidden bg-gradient-to-r" 
+                   [ngClass]="course.isPaid ? 'from-purple-500 to-pink-500' : 'from-blue-500 to-teal-500'">
+                <img [src]="course.bannerImageUrl || '/assets/course-default.jpg'" 
+                     [alt]="course.title" 
+                     class="w-full h-full object-cover mix-blend-overlay opacity-90">
+                     
+                <!-- Price Badge -->
+                <div class="absolute top-4 right-4">
+                  <span *ngIf="course.isPaid" 
+                        class="px-4 py-2 bg-white text-gray-900 rounded-full text-sm font-medium shadow-md">
+                    KES {{ course.price }}
+                  </span>
+                  <span *ngIf="!course.isPaid" 
+                        class="px-4 py-2 bg-green-500 text-white rounded-full text-sm font-medium shadow-md">
+                    Free
+                  </span>
                 </div>
               </div>
-            </div>
 
-            <!-- Course Details -->
-            <div class="p-8">
-              <div class="max-w-3xl mx-auto">
-                <!-- Description -->
-                <div class="prose prose-lg mb-12">
-                  <h2 class="text-2xl font-semibold text-gray-900 mb-4">About this course</h2>
-                  <div class="text-gray-600" [class.line-clamp-3]="!showFullDescription">
-                    {{ course.description }}
-                  </div>
-                  <button *ngIf="course.description && course.description.length > 280"
-                          (click)="showFullDescription = !showFullDescription"
-                          class="mt-4 text-blue-600 hover:text-blue-700 font-medium">
-                    {{ showFullDescription ? 'Show less' : 'Read more' }}
-                  </button>
+              <!-- Categories Section -->
+              <div class="px-8 py-4 border-b border-gray-100">
+                <!-- Category Section -->
+                <div class="flex justify-between items-center mb-3">
+                  <span class="text-xs uppercase tracking-wider text-gray-500">Categories</span>
+                  <span class="text-sm text-gray-500">Last updated: {{ course.updatedAt | date:'mediumDate' }}</span>
+                </div>
+                
+                <!-- Categories Tags -->
+                <div class="flex flex-wrap gap-2">
+                  <span *ngFor="let category of course.subCategories" 
+                        class="px-3 py-1 text-xs bg-gray-100 text-gray-600 rounded-full">
+                    {{ category.name }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Course Details -->
+              <div class="p-8">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">
+                  {{ course.title }}
+                </h2>
+                
+                <div class="prose prose-gray max-w-none mb-8">
+                  <p class="text-gray-600 whitespace-pre-line">{{ course.description }}</p>
                 </div>
 
-                <!-- Instructor Section -->
-                <div class="bg-white rounded-xl shadow-md p-6 mb-12 border border-gray-100">
-                <h1 class="text-3xl font-bold text-center mb-4">Instructor Details</h1>
-
-                  <div class="flex flex-col sm:flex-row items-center sm:items-start gap-6">
-                    <div class="w-24 h-24 rounded-full overflow-hidden flex-shrink-0 border-4 border-gray-50">
-                      <img [src]="'https://ui-avatars.com/api/?name=' + 
-                           (course.instructor.firstName + '+' + course.instructor.lastName)"
-                           [alt]="course.instructor.firstName"
-                           class="w-full h-full object-cover">
+                <!-- Instructor Info -->
+                <div class="mt-8 pt-8 border-t border-gray-100">
+                  <h3 class="text-xl font-semibold text-gray-900 mb-4">About the Instructor</h3>
+                  <div class="flex items-start gap-4">
+                    <!-- Instructor Avatar -->
+                    <div class="w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 to-teal-500 flex items-center justify-center text-white shadow-md">
+                      <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
                     </div>
-                    <div class="flex-1 text-center sm:text-left">
-                      <h3 class="text-xl font-semibold text-gray-900 mb-1">
+                    
+                    <!-- Instructor Details -->
+                    <div>
+                      <h4 class="text-lg font-semibold text-gray-900">
                         {{ course.instructor.firstName }} {{ course.instructor.lastName }}
-                      </h3>
-                      <p class="text-gray-500 mb-3">{{ course.instructor.email }}</p>
-                      <p class="text-gray-600 mb-4">{{ course.instructor.bio }}</p>
-                      <a [routerLink]="['/instructor', course.instructor.id]" 
-                         class="inline-flex items-center px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-900 transition-colors">
-                        View Profile
-                        <svg class="w-4 h-4 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                d="M9 5l7 7-7 7"/>
-                        </svg>
-                      </a>
+                      </h4>
+                      <p class="text-gray-600">{{ course.instructor.email }}</p>
+                      <p *ngIf="course.instructor.bio" class="text-gray-600 mt-2">{{ course.instructor.bio }}</p>
                     </div>
                   </div>
                 </div>
+              </div>
 
-                <!-- Additional Course Info
-                <div class="text-sm text-gray-500 mb-12">
-                  <p>Created: {{ course.createdAt | date:'mediumDate' }}</p>
-                  <p>Last Updated: {{ course.updatedAt | date:'mediumDate' }}</p>
-                </div> -->
-
-                <!-- Enrollment Section -->
-                <div class="flex justify-center">
-                  <button class="px-12 py-4 bg-black text-white rounded-full font-medium 
-                                hover:bg-gray-900 transform transition-all duration-200 
-                                hover:scale-[1.02] focus:outline-none focus:ring-2 
-                                focus:ring-black focus:ring-offset-2">
-                    Enroll Now
-                  </button>
-                </div>
+              <!-- Enroll Button -->
+              <div class="px-8 pb-8">
+                <button 
+                  (click)="enrollInCourse()"
+                  class="w-full bg-black text-white py-4 rounded-xl hover:bg-gray-900 transition-all duration-300 flex items-center justify-center gap-2 font-medium">
+                  <span>Enroll Now</span>
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                  </svg>
+                </button>
               </div>
             </div>
           </div>
         </div>
-      </main>
-    </div>
+      </section>
+    </main>
   `,
   animations: [
     trigger('fadeIn', [
@@ -170,56 +213,70 @@ import { trigger, transition, style, animate } from '@angular/animations';
     ])
   ],
   styles: [`
-    .line-clamp-3 {
-      display: -webkit-box;
-      -webkit-line-clamp: 3;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
+    .prose {
+      line-height: 1.75;
     }
-    
-    :host {
-      display: block;
+    .prose p {
+      margin-bottom: 1.25em;
     }
   `]
 })
 export class CourseComponent implements OnInit {
-  courseId: string | null = null;
   course: Course | null = null;
-  isLoading = false;
+  isLoading = true;
   error: string | null = null;
-  showFullDescription = false;
-
+  
   constructor(
     private route: ActivatedRoute,
     private courseService: CourseService
   ) {}
 
   ngOnInit(): void {
-    this.courseId = this.route.snapshot.paramMap.get('id');
-    if (!this.courseId) {
-      this.error = 'No valid Course ID provided.';
-      return;
-    }
     this.loadCourse();
   }
 
   loadCourse(): void {
     this.isLoading = true;
-    this.courseService.getCourseById(this.courseId!)
-      .subscribe({
-        next: (response) => {
-          this.isLoading = false;
-          if (response?.success && response.data) {
-            this.course = response.data;
-          } else {
-            this.error = 'Failed to load course information.';
-          }
-        },
-        error: (err) => {
-          this.isLoading = false;
-          this.error = err || 'Error fetching the course.';
-          console.error('Error:', err);
+    this.error = null;
+    
+    const courseId = this.route.snapshot.paramMap.get('id');
+    
+    if (!courseId) {
+      this.isLoading = false;
+      this.error = 'Course ID not found';
+      return;
+    }
+    
+    this.courseService.getCourseById(courseId).subscribe({
+      next: (response) => {
+        if (response.success) {
+          this.course = response.data;
+        } else {
+          this.error = 'Failed to load course details';
         }
-      });
+        this.isLoading = false;
+      },
+      error: (err) => {
+        this.error = 'Error loading course. Please try again later.';
+        this.isLoading = false;
+        console.error('Error loading course:', err);
+      }
+    });
+  }
+
+  enrollInCourse(): void {
+    if (!this.course) return;
+    
+    const courseId = this.course.id;
+    this.courseService.enrollInCourse(courseId).subscribe({
+      next: (response) => {
+        console.log('Successfully enrolled in course', response);
+        // Handle successful enrollment (show confirmation, redirect, etc.)
+      },
+      error: (err) => {
+        console.error('Error enrolling in course:', err);
+        // Show error message to user
+      }
+    });
   }
 }

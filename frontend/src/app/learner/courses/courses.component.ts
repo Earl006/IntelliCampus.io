@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { CourseService, Course } from '../../services/course.service';
 import { trigger, transition, style, animate } from '@angular/animations';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-courses',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, FormsModule],
   animations: [
     trigger('fadeIn', [
       transition(':enter', [
@@ -17,34 +18,82 @@ import { trigger, transition, style, animate } from '@angular/animations';
     ])
   ],
   template: `
-    <main class="min-h-screen bg-gray-50">
+    <main class="min-h-screen bg-white">
       <!-- Header Section -->
-      <section class="bg-gradient-to-br from-slate-900 via-gray-900 to-slate-900 py-20">
-        <div class="container mx-auto px-4">
-          <h1 class="text-4xl md:text-5xl font-bold text-white text-center mb-6">
-            Explore Our Courses
-          </h1>
-          <p class="text-gray-300 text-center max-w-2xl mx-auto">
-            Discover a world of knowledge with our carefully curated courses designed to help you succeed.
+      <section class="relative py-24">
+        <div class="absolute inset-0">
+          <img src="/assets/bg.jpg" alt="Background" class="w-full h-full object-cover opacity-5">
+          <div class="absolute inset-0 bg-gradient-to-br from-slate-900 via-gray-900 to-slate-900 opacity-90"></div>
+        </div>
+        <div class="relative container mx-auto px-4">
+          <h1 class="text-4xl md:text-5xl font-bold text-white text-center mb-6">Explore Our Courses</h1>
+          <p class="text-gray-300 text-center max-w-2xl mx-auto mb-8">
+            Discover a world of knowledge with our carefully curated courses designed to help you succeed
           </p>
+          
+          <!-- Search and Filter -->
+          <div class="max-w-md mx-auto">
+            <div class="relative">
+              <input 
+                type="text" 
+                [(ngModel)]="searchTerm" 
+                (input)="filterCourses()" 
+                placeholder="Search courses..."
+                class="w-full px-4 py-3 rounded-lg border-none focus:outline-none focus:ring-2 focus:ring-gray-200"
+              >
+              <div class="absolute right-3 top-3 text-gray-400">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
       <!-- Courses Grid Section -->
       <section class="py-12">
         <div class="container mx-auto px-4">
+          <!-- Category Filters -->
+          <div *ngIf="!isLoading && !error && courses.length > 0" class="mb-10 flex flex-wrap gap-3 justify-center">
+            <button 
+              (click)="filterByCategory('all')" 
+              [class.bg-black]="selectedCategory === 'all'"
+              [class.text-white]="selectedCategory === 'all'"
+              [class.bg-gray-100]="selectedCategory !== 'all'"
+              [class.text-gray-700]="selectedCategory !== 'all'"
+              class="px-4 py-2 rounded-full text-sm font-medium transition-all duration-200"
+            >
+              All Courses
+            </button>
+            <button 
+              *ngFor="let category of uniqueCategories" 
+              (click)="filterByCategory(category)" 
+              [class.bg-black]="selectedCategory === category"
+              [class.text-white]="selectedCategory === category"
+              [class.bg-gray-100]="selectedCategory !== category"
+              [class.text-gray-700]="selectedCategory !== category"
+              class="px-4 py-2 rounded-full text-sm font-medium transition-all duration-200"
+            >
+              {{ category }}
+            </button>
+          </div>
+
           <!-- Loading State -->
-          <div *ngIf="isLoading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div *ngFor="let i of [1,2,3,4,5,6]" class="bg-white rounded-xl shadow-md overflow-hidden" @fadeIn>
+          <div *ngIf="isLoading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            <div *ngFor="let i of [1,2,3,4,5,6,7,8]" class="bg-white rounded-2xl shadow-lg overflow-hidden" @fadeIn>
               <div class="animate-pulse">
                 <div class="h-48 bg-gray-200"></div>
                 <div class="p-6 space-y-4">
-                  <div class="h-4 bg-gray-200 rounded w-3/4"></div>
-                  <div class="h-3 bg-gray-200 rounded w-full"></div>
-                  <div class="h-3 bg-gray-200 rounded w-2/3"></div>
+                  <div class="h-5 bg-gray-200 rounded w-3/4"></div>
+                  <div class="h-4 bg-gray-200 rounded w-full"></div>
+                  <div class="h-4 bg-gray-200 rounded w-2/3"></div>
                   <div class="flex justify-between items-center pt-4">
-                    <div class="h-8 bg-gray-200 rounded w-24"></div>
-                    <div class="h-8 bg-gray-200 rounded w-16"></div>
+                    <div class="flex items-center space-x-2">
+                      <div class="h-8 w-8 bg-gray-200 rounded-full"></div>
+                      <div class="h-4 bg-gray-200 rounded w-24"></div>
+                    </div>
+                    <div class="h-9 bg-gray-200 rounded-lg w-24"></div>
                   </div>
                 </div>
               </div>
@@ -61,21 +110,28 @@ import { trigger, transition, style, animate } from '@angular/animations';
               <h3 class="text-xl font-semibold text-gray-900 mb-2">Oops! Something went wrong</h3>
               <p class="text-gray-600 mb-4">{{ error }}</p>
               <button (click)="loadCourses()" 
-                      class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                      class="px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-900 transition-all duration-300">
                 Try Again
               </button>
             </div>
           </div>
 
           <!-- No Courses State -->
-          <div *ngIf="!isLoading && !error && courses.length === 0" class="min-h-[400px] flex items-center justify-center" @fadeIn>
+          <div *ngIf="!isLoading && !error && filteredCourses.length === 0" class="min-h-[400px] flex items-center justify-center" @fadeIn>
             <div class="text-center">
               <svg class="w-16 h-16 text-gray-400 mb-4 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                       d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
               </svg>
               <h3 class="text-xl font-semibold text-gray-900 mb-2">No Courses Found</h3>
-              <p class="text-gray-600">Check back later for new courses or try refreshing the page.</p>
+              <p class="text-gray-600">
+                {{ courses.length > 0 ? 'Try adjusting your search or filters.' : 'Check back later for new courses or try refreshing the page.' }}
+              </p>
+              <button *ngIf="searchTerm || selectedCategory !== 'all'" 
+                      (click)="resetFilters()" 
+                      class="mt-4 px-5 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all duration-200">
+                Reset Filters
+              </button>
             </div>
           </div>
 
@@ -83,67 +139,37 @@ import { trigger, transition, style, animate } from '@angular/animations';
           <div *ngIf="!isLoading && !error && courses.length > 0" 
                class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             <div *ngFor="let course of courses" 
-                 class="group bg-white/80 backdrop-blur-sm rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 border border-gray-100" 
+                 class="group bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl" 
                  @fadeIn>
-              
-              <!-- Course Image -->
-              <div class="relative h-52 overflow-hidden bg-gradient-to-r" 
-                   [ngClass]="course.isPaid ? 'from-purple-500 to-pink-500' : 'from-blue-500 to-teal-500'">
-                <img [src]="course.bannerImageUrl || '/assets/course-default.jpg'" 
-                     [alt]="course.title" 
-                     class="w-full h-full object-cover mix-blend-overlay opacity-90">
-              </div>
-              
-              <!-- Price and Categories Section -->
-              <div class="px-8 py-4 border-b border-gray-100">
-                <!-- Price Badge & Categories Label -->
-                <div class="flex justify-between items-center mb-3">
-                  <span class="text-xs uppercase tracking-wider text-gray-500">Categories</span>
-                  <span [class]="course.isPaid ? 'bg-purple-500' : 'bg-green-500'" 
-                        class="text-white px-4 py-1.5 rounded-full text-sm font-medium">
-                    {{ course.isPaid ? (course.price | currency:'KES') : 'Free' }}
-                  </span>
-                </div>
-                <!-- Categories List -->
-                <div class="flex flex-wrap gap-2">
-                  <span *ngFor="let category of course.subCategories" 
-                        class="px-3 py-1 text-xs bg-gray-100 text-gray-600 rounded-full">
-                    {{ category.name }}
+              <div class="relative">
+                <img [src]="course.bannerImageUrl || 'assets/images/course-placeholder.jpg'" 
+                     [alt]="course.title"
+                     class="w-full h-48 object-cover">
+                <div class="absolute top-4 right-4">
+                  <span *ngIf="course.isPaid" 
+                        class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-white text-gray-900">
+                    {{ course.price | currency }}
                   </span>
                 </div>
               </div>
               
-              <!-- Course Content -->
-              <div class="p-8">
-                <h3 class="text-xl font-bold text-gray-800 mb-3 line-clamp-2 group-hover:text-blue-600 transition-colors">
+              <div class="p-6">
+                <h3 class="text-xl font-semibold text-gray-900 mb-2 group-hover:text-indigo-600 transition-colors">
                   {{ course.title }}
                 </h3>
-                <!-- <p class="text-gray-600 mb-6 line-clamp-2">
-                  {{ course.description }}
-                </p> -->
-
-                <!-- Instructor Section -->
-                <div class="flex items-center justify-between py-4 border-t border-gray-100">
-                  <div class="flex items-center gap-4">
-                    <!-- Instructor Avatar -->
-                    <div class="relative">
-                      <div class="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-teal-500 flex items-center justify-center text-white shadow-md">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                        </svg>
-                      </div>
-                    </div>
-                    <!-- Instructor Info -->
-                    <div>
-                      <h4 class="text-sm font-semibold text-gray-800">
-                        {{ course.instructor.firstName }} {{ course.instructor.lastName }}
-                      </h4>
-                      <p class="text-xs text-gray-500">Course Instructor</p>
-                    </div>
+                <p class="text-gray-600 line-clamp-2 mb-4">{{ course.description }}</p>
+                
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center space-x-2">
+                    <img [src]="'https://ui-avatars.com/api/?name=' + course.instructor.email" 
+                         [alt]="course.instructor.email"
+                         class="w-8 h-8 rounded-full">
+                    <span class="text-sm text-gray-600">{{ course.instructor.email }}</span>
                   </div>
-                  <a [routerLink]="['/courses', course.id]" class="text-blue-600 hover:text-blue-700 font-medium text-sm">
-                    Learn more →
+                  
+                  <a [routerLink]="['/courses', course.id]" 
+                     class="inline-flex items-center px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700">
+                    View Course
                   </a>
                 </div>
               </div>
@@ -157,17 +183,6 @@ import { trigger, transition, style, animate } from '@angular/animations';
               </div>
             </div>
           </div>
-
-          <!-- View All Button -->
-          <!-- <div class="text-center mt-16">
-            <a routerLink="/courses" 
-               class="inline-flex items-center gap-3 bg-black hover:bg-gray-800 text-white px-8 py-4 rounded-full transition-colors duration-300 font-medium shadow-lg">
-              View All Courses
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
-              </svg>
-            </a>
-          </div> -->
         </div>
       </section>
     </main>
@@ -183,8 +198,19 @@ import { trigger, transition, style, animate } from '@angular/animations';
 })
 export class CoursesComponent implements OnInit {
   courses: Course[] = [];
+  filteredCourses: Course[] = [];
   isLoading = true;
   error: string | null = null;
+  
+  // Search and filter
+  searchTerm = '';
+  selectedCategory = 'all';
+  uniqueCategories: string[] = [];
+  
+  // Pagination
+  currentPage = 1;
+  pageSize = 8;
+  totalPages = 1;
 
   constructor(private courseService: CourseService) {}
 
@@ -198,6 +224,8 @@ export class CoursesComponent implements OnInit {
     this.courseService.getCourses().subscribe({
       next: (response) => {
         this.courses = response.data;
+        this.extractCategories();
+        this.filterCourses();
         this.isLoading = false;
       },
       error: (err) => {
@@ -206,5 +234,83 @@ export class CoursesComponent implements OnInit {
         console.error('Error loading courses:', err);
       }
     });
+  }
+
+  extractCategories() {
+    const allCategories: string[] = [];
+    
+    this.courses.forEach(course => {
+      course.subCategories.forEach(subCat => {
+        if (!allCategories.includes(subCat.name)) {
+          allCategories.push(subCat.name);
+        }
+      });
+    });
+    
+    this.uniqueCategories = allCategories;
+  }
+
+  filterCourses() {
+    let result = [...this.courses];
+    
+    // Apply search filter
+    if (this.searchTerm.trim()) {
+      const term = this.searchTerm.trim().toLowerCase();
+      result = result.filter(course => 
+        course.title.toLowerCase().includes(term) || 
+        course.description.toLowerCase().includes(term)
+      );
+    }
+    
+    // Apply category filter
+    if (this.selectedCategory !== 'all') {
+      result = result.filter(course => 
+        course.subCategories.some(subCat => subCat.name === this.selectedCategory)
+      );
+    }
+    
+    // Calculate total pages
+    this.totalPages = Math.max(1, Math.ceil(result.length / this.pageSize));
+    
+    // Apply pagination
+    const startIndex = (this.currentPage - 1) * this.pageSize;
+    this.filteredCourses = result.slice(startIndex, startIndex + this.pageSize);
+  }
+
+  filterByCategory(category: string) {
+    this.selectedCategory = category;
+    this.currentPage = 1;
+    this.filterCourses();
+  }
+
+  resetFilters() {
+    this.searchTerm = '';
+    this.selectedCategory = 'all';
+    this.currentPage = 1;
+    this.filterCourses();
+  }
+
+  changePage(page: number) {
+    this.currentPage = page;
+    this.filterCourses();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  getPageNumbers(): number[] {
+    const pages: number[] = [];
+    const maxVisiblePages = 5;
+    let startPage = Math.max(1, this.currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = startPage + maxVisiblePages - 1;
+    
+    if (endPage > this.totalPages) {
+      endPage = this.totalPages;
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+    
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+    
+    return pages;
   }
 }
