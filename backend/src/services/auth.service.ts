@@ -89,6 +89,8 @@ export default class AuthService {
     const token = generateToken({
       id: user.id,
       email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
       phoneNumber: user.phoneNumber,
       role: user.role,
 

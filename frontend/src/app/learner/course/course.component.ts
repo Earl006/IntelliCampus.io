@@ -38,7 +38,7 @@ import { DatePipe } from '@angular/common';
       <!-- Header Section -->
       <section class="relative py-16 z-10">
         <div class="container mx-auto px-4">
-          <div class="flex items-center gap-2 mb-4 mt-">
+          <div class="flex items-center gap-2 mb-4 mt-10">
             <a routerLink="/courses" class="text-gray-500 hover:text-black flex items-center">
               <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
@@ -203,15 +203,6 @@ import { DatePipe } from '@angular/common';
       </section>
     </main>
   `,
-  animations: [
-    trigger('fadeIn', [
-      transition(':enter', [
-        style({ opacity: 0, transform: 'translateY(10px)' }),
-        animate('500ms cubic-bezier(0.4, 0, 0.2, 1)', 
-               style({ opacity: 1, transform: 'translateY(0)' }))
-      ])
-    ])
-  ],
   styles: [`
     .prose {
       line-height: 1.75;

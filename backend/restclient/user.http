@@ -1,127 +1,127 @@
-# @baseUrl = http://localhost:3000/api
-# @authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ1YWM0OWViLWJiMmMtNDMyZS1iMDk0LTMyZjFkYTZkYmYzNiIsImVtYWlsIjoiZWFybGpvZTA2QG91dGxvb2suY29tIiwicGhvbmVOdW1iZXIiOiIwNzExMjI0NTg1MyIsInJvbGUiOiJMRUFSTkVSIiwiaWF0IjoxNzM4MzMyMzI2LCJleHAiOjE3MzgzMzU5MjZ9.RWaZ9BBgESAhnGI-1e3Ep9C0irekOsOlbmjrTwki2DU
-# @adminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjQ2ODgwZjkzLWMzYTUtNGZmNC04YjJjLTE1MDljMDEzNmE1MiIsImVtYWlsIjoiZWFybGpvZTA2QGdtYWlsLmNvbSIsInBob25lTnVtYmVyIjoiMDcxMTIyNzIyNTAiLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3MzgzMzIzNDYsImV4cCI6MTczODMzNTk0Nn0.P8K6yBNgsiF0VGeWTyRsXjCiLu46B49nz9_bK0xBLWY
+@baseUrl = http://localhost:3000/api
+@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ1YWM0OWViLWJiMmMtNDMyZS1iMDk0LTMyZjFkYTZkYmYzNiIsImVtYWlsIjoiZWFybGpvZTA2QG91dGxvb2suY29tIiwiZmlyc3ROYW1lIjoiRWFybGpvZSIsImxhc3ROYW1lIjoiS2FkaW1hIiwicGhvbmVOdW1iZXIiOiIwNzExMjI0NTg1MyIsInJvbGUiOiJJTlNUUlVDVE9SIiwiaWF0IjoxNzQxNjU1MjE2LCJleHAiOjE3NDE2NTg4MTZ9.Uwn7oxSuXiUV2f36NeXGrLmkI_Ysghteej6mT0foQCI
+@adminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjQ2ODgwZjkzLWMzYTUtNGZmNC04YjJjLTE1MDljMDEzNmE1MiIsImVtYWlsIjoiZWFybGpvZTA2QGdtYWlsLmNvbSIsInBob25lTnVtYmVyIjoiMDcxMTIyNzIyNTAiLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3MzgzMzIzNDYsImV4cCI6MTczODMzNTk0Nn0.P8K6yBNgsiF0VGeWTyRsXjCiLu46B49nz9_bK0xBLWY
 
-# ### Variables for testing
-# @testEmail = earljo06@gmail.com
-# @testPhone = +254712345678
-# @testUserId = 123e4567-e89b-12d3-a456-426614174000
+### Variables for testing
+@testEmail = earljo06@gmail.com
+@testPhone = +254712345678
+@testUserId = 123e4567-e89b-12d3-a456-426614174000
 
-# ### Get auth token (normal user)
-# POST {{baseUrl}}/auth/login
-# Content-Type: application/json
+### Get auth token (normal user)
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
 
-# {
-#     "email": "earljoe06@outlook.com",
-#     "password": "password"
-# }
+{
+    "email": "earljoe06@outlook.com",
+    "password": "password"
+}
 
-# ### Get auth token (admin user)
-# POST {{baseUrl}}/auth/login
-# Content-Type: application/json
+### Get auth token (admin user)
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
 
-# {
-#     "email": "earljoe06@gmail.com",
-#     "password": "password"
-# }
+{
+    "email": "earljoe06@gmail.com",
+    "password": "password"
+}
 
-# ### Public Routes ###
+### Public Routes ###
 
-# ### Get user by email
-# GET {{baseUrl}}/users/earljoe06@outlook.com
+### Get user by email
+GET {{baseUrl}}/users/earljoe06@outlook.com
 
-# ### Get user by phone
-# GET {{baseUrl}}/users/phone/07112272250
+### Get user by phone
+GET {{baseUrl}}/users/phone/07112272250
 
-# ###GET USER NAME BY ID
-# POST {{baseUrl}}/users/name
-# Content-Type: application/json
+###GET USER NAME BY ID
+POST {{baseUrl}}/users/name
+Content-Type: application/json
 
-# {
-#     "id": "19b7adec-2d69-42b1-9876-442de76a8ce5"
-# }
+{
+    "id": "19b7adec-2d69-42b1-9876-442de76a8ce5"
+}
 
-# ### Protected User Routes ###
+### Protected User Routes ###
 
-# ### Get own profile
-# GET {{baseUrl}}/users/profile/me
-# Authorization: Bearer {{authToken}}
+### Get own profile
+GET {{baseUrl}}/users/profile/me
+Authorization: Bearer {{authToken}}
 
-# ### Update profile
-# PUT {{baseUrl}}/users/profile/update
-# Authorization: Bearer {{authToken}}
-# Content-Type: application/json
+### Update profile
+PUT {{baseUrl}}/users/profile/update
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
 
-# {
-#     "bio": "My bio bana"
+{
+    "bio": "My bio bana"
     
-# }
+}
 
-# ### Change password
-# PUT {{baseUrl}}/users/profile/change-password
-# Authorization: Bearer {{authToken}}
-# Content-Type: application/json
+### Change password
+PUT {{baseUrl}}/users/profile/change-password
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
 
-# {
-#     "newPassword": "password"
-# }
+{
+    "newPassword": "password"
+}
 
-# ### Deactivate own account
-# POST {{baseUrl}}/users/profile/deactivate
-# Authorization: Bearer {{authToken}}
+### Deactivate own account
+POST {{baseUrl}}/users/profile/deactivate
+Authorization: Bearer {{authToken}}
 
-# ### Request instructor role
-# POST {{baseUrl}}/users/instructor/request
-# Authorization: Bearer {{authToken}}
+### Request instructor role
+POST {{baseUrl}}/users/instructor/request
+Authorization: Bearer {{authToken}}
 
-# ### Protected Admin Routes ###
+### Protected Admin Routes ###
 
-# ### Get all users
-# GET {{baseUrl}}/users/admin/all
-# Authorization: Bearer {{adminToken}}
+### Get all users
+GET {{baseUrl}}/users/admin/all
+Authorization: Bearer {{adminToken}}
 
-# ### Get active users
-# GET {{baseUrl}}/users/admin/active
-# Authorization: Bearer {{adminToken}}
+### Get active users
+GET {{baseUrl}}/users/admin/active
+Authorization: Bearer {{adminToken}}
 
-# ### Get inactive users
-# GET {{baseUrl}}/users/admin/inactive
-# Authorization: Bearer {{adminToken}}
+### Get inactive users
+GET {{baseUrl}}/users/admin/inactive
+Authorization: Bearer {{adminToken}}
 
-# ### Get users by role
-# GET {{baseUrl}}/users/admin/role/INSTRUCTOR
-# Authorization: Bearer {{adminToken}}
+### Get users by role
+GET {{baseUrl}}/users/admin/role/INSTRUCTOR
+Authorization: Bearer {{adminToken}}
 
-# ### Get instructor requests
-# GET {{baseUrl}}/users/admin/instructor-requests
-# Authorization: Bearer {{adminToken}}
+### Get instructor requests
+GET {{baseUrl}}/users/admin/instructor-requests
+Authorization: Bearer {{adminToken}}
 
-# ### Get specific instructor
-# GET {{baseUrl}}/users/instructor/d5ac49eb-bb2c-432e-b094-32f1da6dbf36
-# Authorization: Bearer {{adminToken}}
+### Get specific instructor
+GET {{baseUrl}}/users/instructor/d5ac49eb-bb2c-432e-b094-32f1da6dbf36
+Authorization: Bearer {{adminToken}}
 
-# ### Approve instructor request
-# POST {{baseUrl}}/users/admin/approve-instructor/d5ac49eb-bb2c-432e-b094-32f1da6dbf36
-# Authorization: Bearer {{adminToken}}
+### Approve instructor request
+POST {{baseUrl}}/users/admin/approve-instructor/d5ac49eb-bb2c-432e-b094-32f1da6dbf36
+Authorization: Bearer {{adminToken}}
 
-# ### Reject instructor request
-# POST {{baseUrl}}/users/admin/reject-instructor/d5ac49eb-bb2c-432e-b094-32f1da6dbf36
-# Authorization: Bearer {{adminToken}}
+### Reject instructor request
+POST {{baseUrl}}/users/admin/reject-instructor/d5ac49eb-bb2c-432e-b094-32f1da6dbf36
+Authorization: Bearer {{adminToken}}
 
-# ### Assign role
-# PUT {{baseUrl}}/users/admin/assign-role/d5ac49eb-bb2c-432e-b094-32f1da6dbf36
-# Authorization: Bearer {{adminToken}}
-# Content-Type: application/json
+### Assign role
+PUT {{baseUrl}}/users/admin/assign-role/d5ac49eb-bb2c-432e-b094-32f1da6dbf36
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
 
-# {
-#     "role": "LEARNER"
-# }
+{
+    "role": "LEARNER"
+}
 
-# ### Delete user account
-# DELETE {{baseUrl}}/users/admin/delete/d5ac49eb-bb2c-432e-b094-32f1da6dbf36
-# Authorization: Bearer {{adminToken}}
+### Delete user account
+DELETE {{baseUrl}}/users/admin/delete/d5ac49eb-bb2c-432e-b094-32f1da6dbf36
+Authorization: Bearer {{adminToken}}
 
-# ### Activate user account
-# POST {{baseUrl}}/users/admin/activate/d5ac49eb-bb2c-432e-b094-32f1da6dbf36
-# Authorization: Bearer {{adminToken}}
+### Activate user account
+POST {{baseUrl}}/users/admin/activate/d5ac49eb-bb2c-432e-b094-32f1da6dbf36
+Authorization: Bearer {{adminToken}}
 

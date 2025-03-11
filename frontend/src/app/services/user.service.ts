@@ -34,6 +34,8 @@ export interface UserNameResponse {
 export class UserService {
   private apiUrl = 'http://localhost:3000/api/users';
   private headers = new HttpHeaders().set('Content-Type', 'application/json');
+  private token = localStorage.getItem('token');
+  private tokenHeader = new HttpHeaders().set('Authorization', `Bearer ${this.token}`);
 
   constructor(private http: HttpClient) { }
 
@@ -49,8 +51,8 @@ export class UserService {
   // }
 
   // Protected User Routes
-  getProfile(): Observable<User> {
-    return this.http.get<User>(`${this.apiUrl}/profile/me`)
+  getProfile(): Observable<ApiResponse<User>> {
+    return this.http.get<ApiResponse<User>>(`${this.apiUrl}/profile/me`, { headers: this.tokenHeader })
       .pipe(catchError(this.handleError));
   }
 
@@ -58,8 +60,8 @@ export class UserService {
     return this.http.post<UserNameResponse>(`${this.apiUrl}/name`, { id }, { headers: this.headers });
   }
 
-  updateProfile(data: Partial<User>): Observable<User> {
-    return this.http.put<User>(`${this.apiUrl}/profile/update`, data, { headers: this.headers })
+  updateProfile(data: Partial<User>): Observable<ApiResponse<User>> {
+    return this.http.put<ApiResponse<User>>(`${this.apiUrl}/profile/update`, data, { headers: this.headers })
       .pipe(catchError(this.handleError));
   }
 
@@ -73,8 +75,8 @@ export class UserService {
       .pipe(catchError(this.handleError));
   }
 
-  requestInstructorRole(): Observable<User> {
-    return this.http.post<User>(`${this.apiUrl}/instructor/request`, {})
+  requestInstructorRole(): Observable<ApiResponse<User>> {
+    return this.http.post<ApiResponse<User>>(`${this.apiUrl}/instructor/request`, {})
       .pipe(catchError(this.handleError));
   }
 

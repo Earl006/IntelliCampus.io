@@ -7,6 +7,7 @@ import { CoursesComponent } from './learner/courses/courses.component';
 import { ContactComponent } from './learner/contact/contact.component';
 import { CourseComponent } from './learner/course/course.component';
 import { InstructorProfileComponent } from './learner/instructor-profile/instructor-profile.component';
+import { ProfileComponent } from './auth/profile/profile.component';
 
 export const routes: Routes = [
     {path:'', component: HeroComponent},
@@ -24,5 +25,6 @@ export const routes: Routes = [
     {path: 'courses', component:CoursesComponent},
     {path:'courses/:id', component:CourseComponent},
     {path:'contact', component:ContactComponent},
-    {path:'instructor/:id', component:InstructorProfileComponent}
+    {path:'instructor/:id', component:InstructorProfileComponent},
+    {path:'profile', component:ProfileComponent}
 ];

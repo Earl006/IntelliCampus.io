@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import { jwtDecode } from 'jwt-decode';
 
 interface User {
   email: string;
@@ -61,9 +62,26 @@ export class AuthService {
   }
 
   isLoggedIn(): boolean {
-    return !!this.getToken();
+    const token = this.getToken();
+    if (!token) return false;
+    
+    try {
+      const decoded = jwtDecode<any>(token);
+      const isExpired = decoded.exp < Date.now() / 1000;
+      return !isExpired;
+    } catch (error) {
+      return false;
+    }
   }
-
+  getCurrentUser(): User | null {
+    const token = this.getToken();
+    if (!token) {
+      return null;
+    }
+    const payload = token.split('.')[1];
+    const decodedPayload = window.atob(payload);
+    return JSON.parse(decodedPayload);
+  }
   private handleError(error: any) {
     let errorMessage = 'An error occurred';
     if (error.error instanceof ErrorEvent) {

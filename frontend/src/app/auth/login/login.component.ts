@@ -30,6 +30,11 @@ export class LoginComponent {
         next: (res) => {
           this.authService.saveToken(res.token);
           this.router.navigate(['/']);
+
+          setTimeout(() => {
+            window.location.reload();
+          }
+          , 200);
         },
         error: (err) => {
           this.error = err;

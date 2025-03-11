@@ -20,7 +20,7 @@ import { FormsModule } from '@angular/forms';
   template: `
     <main class="min-h-screen bg-white">
       <!-- Header Section -->
-      <section class="relative py-24">
+      <section class="relative py-20">
         <div class="absolute inset-0">
           <img src="/assets/bg.jpg" alt="Background" class="w-full h-full object-cover opacity-5">
           <div class="absolute inset-0 bg-gradient-to-br from-slate-900 via-gray-900 to-slate-900 opacity-90"></div>
@@ -105,7 +105,7 @@ import { FormsModule } from '@angular/forms';
             <div class="text-center">
               <svg class="w-16 h-16 text-gray-400 mb-4 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
               <h3 class="text-xl font-semibold text-gray-900 mb-2">Oops! Something went wrong</h3>
               <p class="text-gray-600 mb-4">{{ error }}</p>
@@ -121,7 +121,7 @@ import { FormsModule } from '@angular/forms';
             <div class="text-center">
               <svg class="w-16 h-16 text-gray-400 mb-4 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                      d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                      d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
               </svg>
               <h3 class="text-xl font-semibold text-gray-900 mb-2">No Courses Found</h3>
               <p class="text-gray-600">
@@ -136,51 +136,94 @@ import { FormsModule } from '@angular/forms';
           </div>
 
           <!-- Courses Grid -->
-          <div *ngIf="!isLoading && !error && courses.length > 0" 
-               class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div *ngFor="let course of courses" 
-                 class="group bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl" 
+          <div *ngIf="!isLoading && !error && filteredCourses.length > 0" 
+               class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            <div *ngFor="let course of filteredCourses" 
+                 class="group bg-white rounded-2xl shadow-lg overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl border border-gray-100" 
                  @fadeIn>
               <div class="relative">
+                <div class="absolute inset-0 bg-gradient-to-r"
+                     [ngClass]="course.isPaid ? 'from-purple-500 to-pink-500' : 'from-blue-500 to-teal-500'">
+                </div>
                 <img [src]="course.bannerImageUrl || 'assets/images/course-placeholder.jpg'" 
                      [alt]="course.title"
-                     class="w-full h-48 object-cover">
+                     class="w-full h-48 object-cover mix-blend-overlay relative">
                 <div class="absolute top-4 right-4">
                   <span *ngIf="course.isPaid" 
-                        class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-white text-gray-900">
-                    {{ course.price | currency }}
+                        class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-white text-gray-900 shadow-md">
+                    KES {{ course.price }}
+                  </span>
+                  <span *ngIf="!course.isPaid" 
+                        class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-500 text-white shadow-md">
+                    Free
                   </span>
                 </div>
               </div>
               
               <div class="p-6">
-                <h3 class="text-xl font-semibold text-gray-900 mb-2 group-hover:text-indigo-600 transition-colors">
+                <div class="flex flex-wrap gap-2 mb-3">
+                  <span *ngFor="let subCat of course.subCategories.slice(0, 2)" 
+                        class="px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded-full">
+                    {{ subCat.name }}
+                  </span>
+                  <span *ngIf="course.subCategories.length > 2" 
+                        class="px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded-full">
+                    +{{ course.subCategories.length - 2 }}
+                  </span>
+                </div>
+                
+                <h3 class="text-xl font-semibold text-gray-900 mb-2 line-clamp-2 group-hover:text-gray-700 transition-colors">
                   {{ course.title }}
                 </h3>
-                <p class="text-gray-600 line-clamp-2 mb-4">{{ course.description }}</p>
+                <p class="text-gray-600 line-clamp-2 mb-4 text-sm">{{ course.description }}</p>
                 
-                <div class="flex items-center justify-between">
+                <div class="flex items-center justify-between pt-4 border-t border-gray-100">
                   <div class="flex items-center space-x-2">
-                    <img [src]="'https://ui-avatars.com/api/?name=' + course.instructor.email" 
-                         [alt]="course.instructor.email"
-                         class="w-8 h-8 rounded-full">
-                    <span class="text-sm text-gray-600">{{ course.instructor.email }}</span>
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-teal-500 flex items-center justify-center text-white text-xs overflow-hidden">
+                      {{ course.instructor.email.charAt(0).toUpperCase() }}
+                    </div>
+                    <span class="text-sm text-gray-600 truncate max-w-[100px]">{{ course.instructor.email }}</span>
                   </div>
                   
                   <a [routerLink]="['/courses', course.id]" 
-                     class="inline-flex items-center px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700">
-                    View Course
+                     class="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium text-white bg-black hover:bg-gray-900 transition-colors">
+                    View
                   </a>
                 </div>
               </div>
-              
-              <!-- Card Footer -->
-              <div class="px-8 pb-8">
-                <a [routerLink]="['/courses', course.id]" 
-                   class="block text-center bg-black text-white py-3 px-6 rounded-xl hover:opacity-90 transition-opacity font-medium">
-                  Enroll Now
-                </a>
+            </div>
+          </div>
+          
+          <!-- Pagination (if needed) -->
+          <div *ngIf="!isLoading && !error && filteredCourses.length > 0" class="mt-12 flex justify-center">
+            <div class="flex space-x-2">
+              <button 
+                [disabled]="currentPage === 1" 
+                (click)="changePage(currentPage - 1)"
+                [class.opacity-50]="currentPage === 1"
+                class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                Previous
+              </button>
+              <div *ngFor="let page of getPageNumbers()" class="hidden sm:block">
+                <button 
+                  (click)="changePage(page)" 
+                  [class.bg-black]="currentPage === page"
+                  [class.text-white]="currentPage === page"
+                  [class.border-transparent]="currentPage === page"
+                  class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                >
+                  {{ page }}
+                </button>
               </div>
+              <button 
+                [disabled]="currentPage === totalPages" 
+                (click)="changePage(currentPage + 1)"
+                [class.opacity-50]="currentPage === totalPages"
+                class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                Next
+              </button>
             </div>
           </div>
         </div>
@@ -221,6 +264,7 @@ export class CoursesComponent implements OnInit {
   loadCourses() {
     this.isLoading = true;
     this.error = null;
+    
     this.courseService.getCourses().subscribe({
       next: (response) => {
         this.courses = response.data;
