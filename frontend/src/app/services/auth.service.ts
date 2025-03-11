@@ -62,16 +62,7 @@ export class AuthService {
   }
 
   isLoggedIn(): boolean {
-    const token = this.getToken();
-    if (!token) return false;
-    
-    try {
-      const decoded = jwtDecode<any>(token);
-      const isExpired = decoded.exp < Date.now() / 1000;
-      return !isExpired;
-    } catch (error) {
-      return false;
-    }
+   return !!this.getToken();
   }
   getCurrentUser(): User | null {
     const token = this.getToken();

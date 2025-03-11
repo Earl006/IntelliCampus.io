@@ -43,6 +43,7 @@ export class ProfileComponent implements OnInit {
   isSubmittingRequest = false;
   requestSuccess = false;
   requestError = '';
+  showInstructorConfirmModal: boolean = false;
   
   constructor(
     private authService: AuthService,
@@ -145,29 +146,37 @@ export class ProfileComponent implements OnInit {
   }
 
   requestInstructorRole(): void {
-    if (confirm('Are you sure you want to request instructor status? This will require approval from administrators.')) {
-      this.isSubmittingRequest = true;
-      this.clearMessages();
+    this.showInstructorConfirmModal = true;
+  }
 
-      this.userService.requestInstructorRole().subscribe({
-        next: (response: ApiResponse<User>) => {
-          if (response.success && response.data) {
-            this.userProfile = response.data;
-            this.requestSuccess = true;
-            this.isSubmittingRequest = false;
-            setTimeout(() => this.requestSuccess = false, 5000);
-          } else {
-            this.requestError = 'Failed to submit instructor request.';
-            this.isSubmittingRequest = false;
-          }
-        },
-        error: (error) => {
-          console.error('Error requesting instructor role:', error);
-          this.requestError = 'Failed to submit request: ' + (error.message || 'Unknown error');
+  cancelInstructorRequest(): void {
+    this.showInstructorConfirmModal = false;
+  }
+
+  confirmInstructorRequest(): void {
+    // Hide the modal
+    this.showInstructorConfirmModal = false;
+    this.isSubmittingRequest = true;
+    this.clearMessages();
+
+    this.userService.requestInstructorRole().subscribe({
+      next: (response: ApiResponse<User>) => {
+        if (response.success && response.data) {
+          this.userProfile = response.data;
+          this.requestSuccess = true;
+          this.isSubmittingRequest = false;
+          setTimeout(() => this.requestSuccess = false, 5000);
+        } else {
+          this.requestError = 'Failed to submit instructor request.';
           this.isSubmittingRequest = false;
         }
-      });
-    }
+      },
+      error: (error) => {
+        console.error('Error requesting instructor role:', error);
+        this.requestError = 'Failed to submit request: ' + (error.message || 'Unknown error');
+        this.isSubmittingRequest = false;
+      }
+    });
   }
 
   changeTab(tab: string): void {

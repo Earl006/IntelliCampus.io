@@ -390,4 +390,17 @@ export default class CourseService {
 
     return updated;
   }
+
+  /**
+   * Get enrollments for a user
+   */
+  async getEnrollmentsForUser(userId: string) {
+    return this.prisma.enrollment.findMany({
+      where: { userId },
+      include: {
+        course: true,
+        cohort: true,
+      },
+    });
+  }
 }

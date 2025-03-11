@@ -34,6 +34,8 @@ router.post(
   requireRole([Role.LEARNER]), 
   courseController.deferStudent
 );
+// Get enrollments for user
+router.get('/u/enrollments', requireRole([Role.LEARNER]),  courseController.getEnrollmentsForUser);
 
 // Instructor routes
 router.use(requireRole([Role.INSTRUCTOR, Role.ADMIN]));
@@ -56,5 +58,7 @@ router.get('/:courseId/cohorts', courseController.getCourseCohorts);
 
 // Student management
 router.get('/:courseId/students', courseController.getCourseStudents);
+
+
 
 export default router;

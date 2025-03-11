@@ -1,0 +1,195 @@
+<main class="bg-gray-50 min-h-screen py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <!-- Page Header -->
+      <div class="pb-5 border-b border-gray-200 mb-8">
+        <div class="flex flex-wrap items-center justify-between">
+          <h1 class="text-3xl font-bold text-gray-900">My Courses</h1>
+          <a routerLink="/courses" class="mt-3 sm:mt-0 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            Browse Courses
+            <svg xmlns="http://www.w3.org/2000/svg" class="ml-2 -mr-1 h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+            </svg>
+          </a>
+        </div>
+      </div>
+  
+      <!-- Filters -->
+      <div class="mb-6">
+        <div class="sm:hidden">
+          <label for="tabs" class="sr-only">Select a tab</label>
+          <select id="tabs" name="tabs" class="block w-full border-gray-300 rounded-md focus:border-blue-500 focus:ring-blue-500"
+                  (change)="onFilterChange($event)">
+            <option [value]="'all'" [selected]="activeCourseTab === 'all'">All Courses</option>
+            <option [value]="'in-progress'" [selected]="activeCourseTab === 'in-progress'">In Progress</option>
+            <option [value]="'completed'" [selected]="activeCourseTab === 'completed'">Completed</option>
+          </select>
+        </div>
+        <div class="hidden sm:block">
+          <div class="border-b border-gray-200">
+            <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+              <button
+                (click)="filterEnrollments('all')"
+                class="px-1 py-4 text-sm font-medium border-b-2 whitespace-nowrap"
+                [class.border-blue-500]="activeCourseTab === 'all'"
+                [class.text-blue-600]="activeCourseTab === 'all'"
+                [class.border-transparent]="activeCourseTab !== 'all'"
+                [class.text-gray-500]="activeCourseTab !== 'all'"
+                [class.hover:text-gray-700]="activeCourseTab !== 'all'"
+                [class.hover:border-gray-300]="activeCourseTab !== 'all'">
+                All Courses
+              </button>
+              <button
+                (click)="filterEnrollments('in-progress')"
+                class="px-1 py-4 text-sm font-medium border-b-2 whitespace-nowrap"
+                [class.border-blue-500]="activeCourseTab === 'in-progress'"
+                [class.text-blue-600]="activeCourseTab === 'in-progress'"
+                [class.border-transparent]="activeCourseTab !== 'in-progress'"
+                [class.text-gray-500]="activeCourseTab !== 'in-progress'"
+                [class.hover:text-gray-700]="activeCourseTab !== 'in-progress'"
+                [class.hover:border-gray-300]="activeCourseTab !== 'in-progress'">
+                In Progress
+              </button>
+              <button
+                (click)="filterEnrollments('completed')"
+                class="px-1 py-4 text-sm font-medium border-b-2 whitespace-nowrap"
+                [class.border-blue-500]="activeCourseTab === 'completed'"
+                [class.text-blue-600]="activeCourseTab === 'completed'"
+                [class.border-transparent]="activeCourseTab !== 'completed'"
+                [class.text-gray-500]="activeCourseTab !== 'completed'"
+                [class.hover:text-gray-700]="activeCourseTab !== 'completed'"
+                [class.hover:border-gray-300]="activeCourseTab !== 'completed'">
+                Completed
+              </button>
+            </nav>
+          </div>
+        </div>
+      </div>
+  
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="flex justify-center py-20">
+        <div class="inline-block animate-spin h-8 w-8 border-4 border-gray-200 rounded-full border-t-blue-600"></div>
+      </div>
+  
+      <!-- Error State -->
+      <div *ngIf="error && !isLoading" class="rounded-lg bg-red-50 p-4 mb-6">
+        <div class="flex">
+          <div class="flex-shrink-0">
+            <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+            </svg>
+          </div>
+          <div class="ml-3">
+            <p class="text-sm font-medium text-red-800">{{ error }}</p>
+          </div>
+          <div class="ml-auto pl-3">
+            <button (click)="loadEnrollments()" class="bg-red-50 rounded-md text-red-500 hover:text-red-600 focus:outline-none">
+              <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+  
+      <!-- Empty State -->
+      <div *ngIf="!isLoading && filteredEnrollments.length === 0 && !error" class="text-center py-20">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z" />
+        </svg>
+        <h3 class="mt-2 text-lg font-medium text-gray-900">No courses found</h3>
+        <p class="mt-1 text-sm text-gray-500">
+          {{ activeCourseTab === 'completed' ? 'You haven\'t completed any courses yet.' : 
+             activeCourseTab === 'in-progress' ? 'You don\'t have any courses in progress.' : 
+             'You haven\'t enrolled in any courses yet.' }}
+        </p>
+        <div class="mt-6">
+          <a routerLink="/courses" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            Browse Courses
+          </a>
+        </div>
+      </div>
+  
+      <!-- Course Cards -->
+      <div *ngIf="!isLoading && filteredEnrollments.length > 0" class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div *ngFor="let enrollment of filteredEnrollments" class="bg-white overflow-hidden shadow rounded-lg flex flex-col">
+          <!-- Course Banner -->
+          <div class="relative h-40 bg-gray-300 flex-shrink-0">
+            <img *ngIf="enrollment.course.bannerImageUrl" [src]="enrollment.course.bannerImageUrl" class="w-full h-full object-cover" [alt]="enrollment.course.title">
+            <div *ngIf="!enrollment.course.bannerImageUrl" class="w-full h-full flex items-center justify-center bg-gray-200">
+              <svg class="h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
+            
+            <!-- Tags -->
+            <div class="absolute top-0 left-0 p-2">
+              <span *ngIf="enrollment.completed" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                Completed
+              </span>
+              <span *ngIf="!enrollment.course.isPaid" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                Free
+              </span>
+              <span *ngIf="enrollment.course.isPaid" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                Paid
+              </span>
+            </div>
+  
+            <!-- Progress Bar -->
+            <div class="absolute bottom-0 left-0 w-full">
+              <div class="h-2 bg-gray-200">
+                <div [ngClass]="getProgressColorClass(enrollment.progress)" class="h-2" [style.width.%]="enrollment.progress"></div>
+              </div>
+            </div>
+          </div>
+  
+          <!-- Course Info -->
+          <div class="flex-1 p-5">
+            <h3 class="text-lg font-medium text-gray-900">{{ enrollment.course.title }}</h3>
+            <p class="mt-1 text-sm text-gray-500 line-clamp-2">{{ enrollment.course.description }}</p>
+            
+            <!-- Cohort Info -->
+            <div class="mt-4">
+              <h4 class="text-sm font-medium text-gray-700">Cohort Information</h4>
+              <ul class="mt-1 space-y-1 text-sm text-gray-600">
+                <li>Name: <span class="font-medium">{{ enrollment.cohort.name }}</span></li>
+                <li>Started: <span class="font-medium">{{ formatDate(enrollment.cohort.startDate) }}</span></li>
+                <li *ngIf="enrollment.cohort.endDate">
+                  Days Left: <span [class.text-red-600]="calculateDaysLeft(enrollment.cohort.endDate.toString()) < 7" class="font-medium">
+                    {{ calculateDaysLeft(enrollment.cohort.endDate.toString()) }} days
+                  </span>
+                </li>
+              </ul>
+            </div>
+  
+            <!-- Progress Info -->
+            <div class="mt-4">
+              <div class="flex items-center justify-between text-sm">
+                <span>Progress</span>
+                <span class="font-medium">{{ enrollment.progress.toFixed(0) }}%</span>
+              </div>
+            </div>
+          </div>
+  
+          <!-- Actions -->
+          <div class="bg-gray-50 px-5 py-3 border-t border-gray-200">
+            <div class="flex justify-between items-center">
+              <a [routerLink]="['/learner/course', enrollment.courseId]" class="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-500">
+                Continue Learning
+                <svg class="ml-1 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+              </a>
+              <button *ngIf="enrollment.cohortId" (click)="openCohortChatroom(enrollment.cohortId)" class="inline-flex items-center text-sm font-medium text-gray-600 hover:text-gray-900">
+                <svg class="mr-1 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M18 5v8a2 2 0 01-2 2h-5l-5 4v-4H4a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2zM7 8H5v2h2V8zm2 0h2v2H9V8zm6 0h-2v2h2V8z" clip-rule="evenodd" />
+                </svg>
+                Chat
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>

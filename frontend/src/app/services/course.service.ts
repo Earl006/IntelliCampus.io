@@ -69,7 +69,8 @@ export interface Enrollment {
 export class CourseService {
   private apiUrl = 'http://localhost:3000/api/courses';
   private headers = new HttpHeaders().set('Content-Type', 'application/json');
-
+  private token = localStorage.getItem('token');
+  private tokenHeader = new HttpHeaders().set('Authorization', `Bearer ${this.token}`);
   constructor(private http: HttpClient) { }
 
   // Course CRUD Operations
@@ -142,6 +143,10 @@ export class CourseService {
       .pipe(catchError(this.handleError));
   }
 
+  getEnrollmentsForUser(): Observable<any[]> {
+    return this.http.get<Enrollment[]>(`${this.apiUrl}/u/enrollments`,{ headers: this.tokenHeader })
+      .pipe(catchError(this.handleError));
+  }
   private handleError(error: any) {
     let errorMessage = 'An error occurred';
     if (error.error instanceof ErrorEvent) {

@@ -29,6 +29,7 @@ export default class CourseController {
     this.getCourseStudents = this.getCourseStudents.bind(this);
     this.enrollStudent = this.enrollStudent.bind(this);
     this.deferStudent = this.deferStudent.bind(this);
+    this.getEnrollmentsForUser = this.getEnrollmentsForUser.bind(this);
   }
 
   async createCourse(req: Request, res: Response) {
@@ -330,6 +331,24 @@ export default class CourseController {
        res.status(400).json({
         success: false,
         message: error.message || 'Failed to defer student'
+      });
+    }
+  }
+
+  async getEnrollmentsForUser(req: Request, res: Response) {
+    try {
+      const studentId = req.user.id;
+
+      const enrollments = await this.courseService.getEnrollmentsForUser(studentId);
+
+       res.status(200).json({
+        success: true,
+        data: enrollments
+      });
+    } catch (error: any) {
+       res.status(500).json({
+        success: false,
+        message: error.message || 'Failed to fetch enrollments'
       });
     }
   }
