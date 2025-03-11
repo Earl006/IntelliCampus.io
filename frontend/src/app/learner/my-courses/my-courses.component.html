@@ -124,9 +124,15 @@
             </div>
             
             <!-- Tags -->
-            <div class="absolute top-0 left-0 p-2">
+            <div class="absolute top-0 left-0 p-2 flex flex-wrap gap-1">
               <span *ngIf="enrollment.completed" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                 Completed
+              </span>
+              <span *ngIf="!enrollment.completed && enrollment.progress > 0" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                In Progress
+              </span>
+              <span *ngIf="!enrollment.completed && enrollment.progress === 0" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                Not Started
               </span>
               <span *ngIf="!enrollment.course.isPaid" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                 Free
@@ -168,6 +174,9 @@
               <div class="flex items-center justify-between text-sm">
                 <span>Progress</span>
                 <span class="font-medium">{{ enrollment.progress.toFixed(0) }}%</span>
+              </div>
+              <div class="mt-1 text-xs text-gray-500 text-right">
+                {{ getProgressStatus(enrollment) }}
               </div>
             </div>
           </div>

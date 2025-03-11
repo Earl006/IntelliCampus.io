@@ -60,6 +60,7 @@ export class MyCoursesComponent implements OnInit {
     this.filterEnrollments(selectElement.value as 'all' | 'in-progress' | 'completed');
   }
 
+  // Updated to use completed flag only for determining course status
   filterEnrollments(tab: 'all' | 'in-progress' | 'completed'): void {
     this.activeCourseTab = tab;
     
@@ -67,7 +68,7 @@ export class MyCoursesComponent implements OnInit {
       this.filteredEnrollments = [...this.enrollments];
     } else if (tab === 'in-progress') {
       this.filteredEnrollments = this.enrollments.filter(enrollment => 
-        !enrollment.completed && enrollment.progress > 0
+        !enrollment.completed
       );
     } else if (tab === 'completed') {
       this.filteredEnrollments = this.enrollments.filter(enrollment => 
@@ -85,7 +86,9 @@ export class MyCoursesComponent implements OnInit {
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   }
 
-  formatDate(date: string | Date): string {
+  formatDate(date: string | Date | null | undefined): string {
+    if (!date) return 'Not set';
+    
     const options: Intl.DateTimeFormatOptions = { 
       year: 'numeric', 
       month: 'short', 
@@ -105,5 +108,16 @@ export class MyCoursesComponent implements OnInit {
     if (progress >= 50) return 'bg-blue-500';
     if (progress >= 25) return 'bg-yellow-500';
     return 'bg-gray-300';
+  }
+
+  // Get progress status text
+  getProgressStatus(enrollment: EnrollmentWithDetails): string {
+    if (enrollment.completed) {
+      return 'Completed';
+    } else if (enrollment.progress > 0) {
+      return `${enrollment.progress}% complete`;
+    } else {
+      return 'Not started';
+    }
   }
 }
