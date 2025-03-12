@@ -1,13 +1,14 @@
 # npm install socket.io-client
 # node tests/chat/websocket.test.js
 
+@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImZmODIxNDgxLWZiOWItNDg4Ni1iZjZmLWQ2YmVkMWVkZjJiZSIsImVtYWlsIjoiYW5nZWxha29sd2FAZ21haWwuY29tIiwiZmlyc3ROYW1lIjoiSmFuZSIsImxhc3ROYW1lIjoiRG9lIiwicGhvbmVOdW1iZXIiOiIwNzEyMzQ1Njc4Iiwicm9sZSI6IkxFQVJORVIiLCJpYXQiOjE3NDE3NzI5NTIsImV4cCI6MTc0MTc3NjU1Mn0.lX1vFWL_urhig1pzG3v_pcFWpmGI4_EWyTvVSSzc45g
 
 
 @baseUrl = http://localhost:3000/api/chat
 @courseId = 123e4567-e89b-12d3-a456-426614174000
-@courseRoomId = 456e7890-e12b-12d3-a456-426614174000
+@courseRoomId = 25452a2b-648a-4a7d-adcb-d49800b08ad1
 @cohortId = 789e1234-e56b-12d3-a456-426614174000
-@cohortRoomId = 012e3456-e78b-12d3-a456-426614174000
+@cohortRoomId =13b7350a-8701-4852-83d8-33f1107ebae9
 
 ### Get auth token
 # @name login
@@ -19,7 +20,6 @@ Content-Type: application/json
     "password": "password123"
 }
 
-@authToken = {{login.response.body.token}}
 
 ### Course Chat Operations ###
 

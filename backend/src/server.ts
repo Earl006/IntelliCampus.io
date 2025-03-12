@@ -1,6 +1,6 @@
 import { createServer } from 'http';
 import { Server } from 'socket.io';
-import app, { prisma } from "./app";
+import app, { prisma, chatController } from "./app"; // Import chatController from app
 import { authenticateSocket } from './middlewares/auth.middleware';
 import ChatService from './services/chat.service';
 import CourseService from './services/course.service';
@@ -22,6 +22,9 @@ io.use(authenticateSocket);
 const chatService = new ChatService(prisma, io);
 const paymentService = new PaymentService();
 const courseService = new CourseService(prisma, chatService, paymentService);
+
+// Set the chatService on the chatController
+chatController.setChatService(chatService);
 
 // Setup socket handlers
 chatService.setupSocketHandlers();

@@ -4,10 +4,13 @@ import { PrismaClient } from '@prisma/client';
 import { Server } from 'socket.io';
 
 export default class ChatController {
-  private chatService: ChatService;
+  private chatService!: ChatService;
 
-  constructor(prisma: PrismaClient, io: Server) {
-    this.chatService = new ChatService(prisma, io);
+  constructor(private prisma: PrismaClient) {}
+
+  // Add a method to set chatService after initialization
+  setChatService(chatService: ChatService): void {
+    this.chatService = chatService;
   }
 
   // Get chat history for a course
@@ -135,5 +138,73 @@ export default class ChatController {
   // Initialize Socket.IO handlers
   initializeSocketHandlers() {
     this.chatService.setupSocketHandlers();
+  }
+
+  async getCourseChatRoomInfo(req: Request, res: Response) {
+    try {
+      const { courseId } = req.params;
+      const userId = (req as any).user.id;
+      
+      // Find the CourseChatRoom associated with this course
+      const chatRoom = await this.prisma.courseChatRoom.findFirst({
+        where: { courseId }
+      });
+      
+      if (!chatRoom) {
+         res.status(404).json({
+          success: false,
+          message: 'Chat room not found'
+        });
+      }
+      
+      //  the chat room ID
+       res.status(200).json({
+        success: true,
+        data: {
+          chatRoomId: chatRoom!.id,
+          courseId: chatRoom!.courseId
+        }
+      });
+    } catch (error) {
+      console.error('Error fetching course chat room info:', error);
+       res.status(500).json({
+        success: false,
+        message: 'Failed to get chat room information'
+      });
+    }
+  }
+  
+  async getCohortChatRoomInfo(req: Request, res: Response) {
+    try {
+      const { cohortId } = req.params;
+      const userId = (req as any).user.id;
+      
+      // Find the CohortChatRoom associated with this cohort
+      const chatRoom = await this.prisma.cohortChatRoom.findFirst({
+        where: { cohortId }
+      });
+      
+      if (!chatRoom) {
+         res.status(404).json({
+          success: false,
+          message: 'Chat room not found'
+        });
+      }
+      
+      //  the chat room ID
+       res.status(200).json({
+        success: true,
+        data: {
+          chatRoomId: chatRoom!.id,
+          cohortId: chatRoom!.cohortId
+        }
+      });
+    } catch (error) {
+      console.error('Error fetching cohort chat room info:', error);
+       res.status(500).json({
+        success: false,
+        message: 'Failed to get chat room information'
+      });
+    }
   }
 }

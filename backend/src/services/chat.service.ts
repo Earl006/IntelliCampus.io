@@ -52,38 +52,90 @@ export default class ChatService {
         content,
       },
     });
-
-    // Broadcast to all clients in socket room "course_<courseChatRoomId>".
-    this.io.to(`course_${courseChatRoomId}`).emit('course_message', {
+  
+    // Get sender's name for better UX
+    let senderName = "Unknown User";
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: { id: senderId },
+        select: { firstName: true, lastName: true }
+      });
+      
+      if (user) {
+        senderName = `${user.firstName} ${user.lastName}`.trim();
+      }
+    } catch (error) {
+      console.error("Error fetching user name:", error);
+    }
+  
+    // Broadcast complete message data to all clients in room
+    const messageData = {
+      id: message.id,
+      courseChatRoomId,
       senderId,
+      senderName,
       content,
       sentAt: message.sentAt,
-    });
-
+    };
+    
+    console.log(`Broadcasting to course_${courseChatRoomId}:`, messageData);
+    this.io.to(`course_${courseChatRoomId}`).emit('course_message', messageData);
+  
     return message;
   }
-
-  /**
-   * Posts a message in an existing cohort chat room (cohortChatRoomId),
-   * persists in ChatMessage with cohortChatRoomId set, then broadcasts.
-   */
-  async postMessageToCohortChat(cohortChatRoomId: string, senderId: string, content: string) {
-    const message = await this.prisma.chatMessage.create({
-      data: {
-        cohortChatRoomId,
-        senderId,
-        content,
-      },
-    });
-
-    this.io.to(`cohort_${cohortChatRoomId}`).emit('cohort_message', {
+ /**
+ * Posts a message in an existing cohort chat room (cohortChatRoomId),
+ * persists in ChatMessage with cohortChatRoomId set, then broadcasts.
+ */
+async postMessageToCohortChat(cohortChatRoomId: string, senderId: string, content: string, socketId?: string) {
+  const message = await this.prisma.chatMessage.create({
+    data: {
+      cohortChatRoomId,
       senderId,
       content,
-      sentAt: message.sentAt,
-    });
+    },
+  });
 
-    return message;
+  // Get sender's name for better UX
+  let senderName = "Unknown User";
+  try {
+    const user = await this.prisma.user.findUnique({
+      where: { id: senderId },
+      select: { firstName: true, lastName: true }
+    });
+    
+    if (user) {
+      senderName = `${user.firstName} ${user.lastName}`.trim();
+    }
+  } catch (error) {
+    console.error("Error fetching user name:", error);
   }
+
+  // Prepare message data
+  const messageData = {
+    id: message.id,
+    cohortChatRoomId,
+    senderId,
+    senderName,
+    content,
+    sentAt: message.sentAt,
+  };
+  
+  // If we have the sender's socket ID, broadcast to everyone EXCEPT sender
+  if (socketId) {
+    console.log(`Broadcasting to cohort_${cohortChatRoomId} (excluding ${socketId}):`);
+    this.io.to(`cohort_${cohortChatRoomId}`).except(socketId).emit('cohort_message', messageData);
+    
+    // Send directly to sender with a different event name to avoid duplicate processing
+    this.io.to(socketId).emit('cohort_message_sent', messageData);
+  } else {
+    // No sender socket ID, broadcast to everyone
+    console.log(`Broadcasting to cohort_${cohortChatRoomId}:`);
+    this.io.to(`cohort_${cohortChatRoomId}`).emit('cohort_message', messageData);
+  }
+
+  return message;
+}
 
   /**
    * Fetches all messages for a course chat room from ChatMessage,
@@ -147,7 +199,40 @@ export default class ChatService {
       orderBy: { sentAt: 'asc' },
     });
   }
+  async debugSocketRooms(roomId: string) {
+    try {
+      const roomName = `course_${roomId}`;
+      const sockets = await this.io.in(roomName).fetchSockets();
+      console.log(`Room ${roomName} has ${sockets.length} clients:`);
+      
+      sockets.forEach(socket => {
+        console.log(`- Socket ${socket.id}`);
+      });
+      
+      return sockets.length;
+    } catch (error) {
+      console.error('Error debugging socket rooms:', error);
+      return 0;
+    }
+  }
 
+  async debugCohortSocketRooms(roomId: string) {
+    try {
+      const roomName = `cohort_${roomId}`;
+      const sockets = await this.io.in(roomName).fetchSockets();
+      console.log(`Room ${roomName} has ${sockets.length} clients:`);
+      
+      sockets.forEach(socket => {
+        console.log(`- Socket ${socket.id}`);
+      });
+      
+      return sockets.length;
+    } catch (error) {
+      console.error('Error debugging cohort socket rooms:', error);
+      return 0;
+    }
+  }
+  
   setupSocketHandlers() {
     this.io.on('connection', (socket) => {
       console.log('Socket connected:', socket.id);
@@ -158,18 +243,32 @@ export default class ChatService {
         socket.emit('testAccessGranted');
       });
 
-      socket.on('joinCourseRoom', async (courseRoomId: string) => {
+      socket.on('joinCourseRoom', async (payload) => {
         try {
+          // Handle both string and object formats
+          const courseRoomId = typeof payload === 'object' ? payload.roomId : payload;
+          
+          console.log(`Socket ${socket.id} joining course room ${courseRoomId}`);
+          
           if (this.testSockets.has(socket.id)) {
             console.log(`Test socket ${socket.id} joining course room ${courseRoomId}`);
             socket.join(`course_${courseRoomId}`);
+            return;
+          }
+          
+          const chatRoom = await this.prisma.courseChatRoom.findUnique({
+            where: { id: courseRoomId }
+          });
+          
+          if (!chatRoom) {
+            console.error(`Course chat room not found: ${courseRoomId}`);
             return;
           }
 
           const enrollment = await this.prisma.enrollment.findFirst({
             where: {
               userId: socket.data.user.id,
-              courseId: courseRoomId
+              courseId: chatRoom.courseId
             }
           });
           
@@ -184,30 +283,58 @@ export default class ChatService {
         }
       });
 
-      socket.on('joinCohortRoom', async (cohortRoomId: string) => {
+      socket.on('joinCohortRoom', async (payload) => {
         try {
+          // Handle both string and object formats
+          const cohortRoomId = typeof payload === 'object' ? payload.roomId : payload;
+          
+          console.log(`Socket ${socket.id} joining cohort room ${cohortRoomId}`);
+          
           if (this.testSockets.has(socket.id)) {
             console.log(`Test socket ${socket.id} joining cohort room ${cohortRoomId}`);
             socket.join(`cohort_${cohortRoomId}`);
             return;
           }
-
+          
+          const chatRoom = await this.prisma.cohortChatRoom.findUnique({
+            where: { id: cohortRoomId }
+          });
+          
+          if (!chatRoom) {
+            console.error(`Cohort chat room not found: ${cohortRoomId}`);
+            return;
+          }
+      
           const enrollment = await this.prisma.enrollment.findFirst({
             where: {
               userId: socket.data.user.id,
-              cohortId: cohortRoomId
+              cohortId: chatRoom.cohortId
             }
           });
           
           if (!enrollment) {
             throw new Error('Not part of this cohort');
           }
-
+      
           socket.join(`cohort_${cohortRoomId}`);
           this.notifyRoomMembership(cohortRoomId, socket.data.user.id, 'joined');
         } catch (error: any) {
           socket.emit('error', { message: error.message });
         }
+      });
+
+      socket.on('debugRoom', async (data: { roomId: string, type?: 'course' | 'cohort' }) => {
+        const roomId = typeof data === 'object' ? data.roomId : data;
+        const type = data.type || 'course';
+        
+        let count = 0;
+        if (type === 'cohort') {
+          count = await this.debugCohortSocketRooms(roomId);
+        } else {
+          count = await this.debugSocketRooms(roomId);
+        }
+        
+        socket.emit('debugResult', { roomId, type, count });
       });
 
       socket.on('disconnect', () => {
@@ -221,16 +348,44 @@ export default class ChatService {
       // Use authenticated user ID for messages
       socket.on('courseChatMessage', async (data: { roomId: string, content: string }) => {
         try {
-          await this.postMessageToCourseChat(data.roomId, socket.data.user.id, data.content);
+          console.log('Received course message:', data);
+          
+          // Make sure we have the user ID - either from socket.data or use a fallback for testing
+          const userId = socket.data?.user?.id || 'unknown-user';
+          
+          // Post the message which will broadcast to all clients
+          const message = await this.postMessageToCourseChat(data.roomId, userId, data.content);
+          
+          // Send back confirmation to sender with message ID
+          socket.emit('message_sent', {
+            success: true,
+            messageId: message.id,
+          });
+          
         } catch (error: any) {
+          console.error('Error handling course message:', error);
           socket.emit('error', { message: error.message });
         }
       });
   
       socket.on('cohortChatMessage', async (data: { roomId: string, content: string }) => {
         try {
-          await this.postMessageToCohortChat(data.roomId, socket.data.user.id, data.content);
+          console.log('Received cohort message:', data);
+          
+          // Make sure we have the user ID - either from socket.data or use a fallback for testing
+          const userId = socket.data?.user?.id || 'unknown-user';
+          
+          // Post the message which will broadcast to all clients EXCEPT sender
+          const message = await this.postMessageToCohortChat(data.roomId, userId, data.content, socket.id);
+          
+          // Send back confirmation to sender with message ID
+          socket.emit('message_sent', {
+            success: true,
+            messageId: message.id,
+          });
+          
         } catch (error: any) {
+          console.error('Error handling cohort message:', error);
           socket.emit('error', { message: error.message });
         }
       });
