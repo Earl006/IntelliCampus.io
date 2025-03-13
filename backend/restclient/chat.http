@@ -1,60 +1,60 @@
-# # npm install socket.io-client
-# # node tests/chat/websocket.test.js
+# npm install socket.io-client
+# node tests/chat/websocket.test.js
 
-# @authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImZmODIxNDgxLWZiOWItNDg4Ni1iZjZmLWQ2YmVkMWVkZjJiZSIsImVtYWlsIjoiYW5nZWxha29sd2FAZ21haWwuY29tIiwiZmlyc3ROYW1lIjoiSmFuZSIsImxhc3ROYW1lIjoiRG9lIiwicGhvbmVOdW1iZXIiOiIwNzEyMzQ1Njc4Iiwicm9sZSI6IkxFQVJORVIiLCJpYXQiOjE3NDE3NzI5NTIsImV4cCI6MTc0MTc3NjU1Mn0.lX1vFWL_urhig1pzG3v_pcFWpmGI4_EWyTvVSSzc45g
-
-
-# @baseUrl = http://localhost:3000/api/chat
-# @courseId = 123e4567-e89b-12d3-a456-426614174000
-# @courseRoomId = 25452a2b-648a-4a7d-adcb-d49800b08ad1
-# @cohortId = 789e1234-e56b-12d3-a456-426614174000
-# @cohortRoomId =13b7350a-8701-4852-83d8-33f1107ebae9
-
-# ### Get auth token
-# # @name login
-# POST http://localhost:3000/api/auth/login
-# Content-Type: application/json
-
-# {
-#     "email": "test@example.com",
-#     "password": "password123"
-# }
+@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImZmODIxNDgxLWZiOWItNDg4Ni1iZjZmLWQ2YmVkMWVkZjJiZSIsImVtYWlsIjoiYW5nZWxha29sd2FAZ21haWwuY29tIiwiZmlyc3ROYW1lIjoiSmFuZSIsImxhc3ROYW1lIjoiRG9lIiwicGhvbmVOdW1iZXIiOiIwNzEyMzQ1Njc4Iiwicm9sZSI6IkxFQVJORVIiLCJpYXQiOjE3NDE3NzI5NTIsImV4cCI6MTc0MTc3NjU1Mn0.lX1vFWL_urhig1pzG3v_pcFWpmGI4_EWyTvVSSzc45g
 
 
-# ### Course Chat Operations ###
+@baseUrl = http://localhost:3000/api/chat
+@courseId = 123e4567-e89b-12d3-a456-426614174000
+@courseRoomId = 25452a2b-648a-4a7d-adcb-d49800b08ad1
+@cohortId = 789e1234-e56b-12d3-a456-426614174000
+@cohortRoomId =13b7350a-8701-4852-83d8-33f1107ebae9
 
-# ### Create course chat room
-# POST {{baseUrl}}/course/{{courseId}}/room
-# Authorization: Bearer {{authToken}}
+### Get auth token
+# @name login
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
 
-# ### Get course chat history
-# GET {{baseUrl}}/course/{{courseRoomId}}/messages
-# Authorization: Bearer {{authToken}}
+{
+    "email": "test@example.com",
+    "password": "password123"
+}
 
-# ### Post message to course chat (HTTP fallback)
-# POST {{baseUrl}}/course/{{courseRoomId}}/message
-# Authorization: Bearer {{authToken}}
-# Content-Type: application/json
 
-# {
-#     "content": "Test message in course chat"
-# }
+### Course Chat Operations ###
 
-# ### Cohort Chat Operations ###
+### Create course chat room
+POST {{baseUrl}}/course/{{courseId}}/room
+Authorization: Bearer {{authToken}}
 
-# ### Create cohort chat room
-# POST {{baseUrl}}/cohort/{{cohortId}}/room
-# Authorization: Bearer {{authToken}}
+### Get course chat history
+GET {{baseUrl}}/course/{{courseRoomId}}/messages
+Authorization: Bearer {{authToken}}
 
-# ### Get cohort chat history
-# GET {{baseUrl}}/cohort/{{cohortRoomId}}/messages
-# Authorization: Bearer {{authToken}}
+### Post message to course chat (HTTP fallback)
+POST {{baseUrl}}/course/{{courseRoomId}}/message
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
 
-# ### Post message to cohort chat (HTTP fallback)
-# POST {{baseUrl}}/cohort/2b652a2b-6b7a-4a18-ba3f-fda3d2eb2cdb/message
-# Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjE5YjdhZGVjLTJkNjktNDJiMS05ODc2LTQ0MmRlNzZhOGNlNSIsImVtYWlsIjoicmlnaHRtZW5jdXN0b216QGdtYWlsLmNvbSIsInBob25lTnVtYmVyIjoiMDEwNjMyNjYyNyIsInJvbGUiOiJMRUFSTkVSIiwiaWF0IjoxNzM4MzcxNDkwLCJleHAiOjE3MzgzNzUwOTB9.yZdsAyUNSrYzgHa10I8CIZnhXuRrVBLo2xOMk4BXKsk
-# Content-Type: application/json
+{
+    "content": "Test message in course chat"
+}
 
-# {
-#     "content": "Test message in cohort chat"
-# }
+### Cohort Chat Operations ###
+
+### Create cohort chat room
+POST {{baseUrl}}/cohort/{{cohortId}}/room
+Authorization: Bearer {{authToken}}
+
+### Get cohort chat history
+GET {{baseUrl}}/cohort/{{cohortRoomId}}/messages
+Authorization: Bearer {{authToken}}
+
+### Post message to cohort chat (HTTP fallback)
+POST {{baseUrl}}/cohort/2b652a2b-6b7a-4a18-ba3f-fda3d2eb2cdb/message
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjE5YjdhZGVjLTJkNjktNDJiMS05ODc2LTQ0MmRlNzZhOGNlNSIsImVtYWlsIjoicmlnaHRtZW5jdXN0b216QGdtYWlsLmNvbSIsInBob25lTnVtYmVyIjoiMDEwNjMyNjYyNyIsInJvbGUiOiJMRUFSTkVSIiwiaWF0IjoxNzM4MzcxNDkwLCJleHAiOjE3MzgzNzUwOTB9.yZdsAyUNSrYzgHa10I8CIZnhXuRrVBLo2xOMk4BXKsk
+Content-Type: application/json
+
+{
+    "content": "Test message in cohort chat"
+}
