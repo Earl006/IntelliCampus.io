@@ -1,6 +1,7 @@
 @baseUrl = http://localhost:3000/api/materials
 @materialId = 987e6543-e21b-12d3-a456-426614174000
 @instructorToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ1YWM0OWViLWJiMmMtNDMyZS1iMDk0LTMyZjFkYTZkYmYzNiIsImVtYWlsIjoiZWFybGpvZTA2QG91dGxvb2suY29tIiwicGhvbmVOdW1iZXIiOiIwNzExMjI0NTg1MyIsInJvbGUiOiJJTlNUUlVDVE9SIiwiaWF0IjoxNzM4NTkwMjU3LCJleHAiOjE3Mzg1OTM4NTd9.9U8WsagC2TrPb7EttDWHuEIdsAUF2REPmBS5p-DwyYg
+@studentToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjE5YjdhZGVjLTJkNjktNDJiMS05ODc2LTQ0MmRlNzZhOGNlNSIsImVtYWlsIjoicmlnaHRtZW5jdXN0b216QGdtYWlsLmNvbSIsImZpcnN0TmFtZSI6IkpvaG4iLCJsYXN0TmFtZSI6IkRvZSIsInBob25lTnVtYmVyIjoiMDEwNjMyNjYyNyIsInJvbGUiOiJMRUFSTkVSIiwiaWF0IjoxNzQxNzI5MDY0LCJleHAiOjE3NDE3MzI2NjR9.3x9jarpEvTsMRIlBe-ftmYMfs98OeUaD48LQr1p5QGA
 
 ### INSTRUCTOR TOKEN
 POST http://localhost:3000/api/auth/login
@@ -11,11 +12,28 @@ Content-Type: application/json
     "password": "password"
 }
 
+### STUDENT TOKEN
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+    "email": "rightmencustomz@gmail.com",
+    "password": "password"
+}
+
 ### Public Routes (Requires Authentication) ###
 
 ### Get materials for course
 GET {{baseUrl}}/course/e69bc7b7-1eb6-4cc0-b41f-94989ae1f7df
 Authorization: Bearer {{instructorToken}}
+
+### Get single material by ID
+GET {{baseUrl}}/3dd4fc61-75ff-4f71-b178-2672d523a5fe
+Authorization: Bearer {{instructorToken}}
+
+### Get single material by ID (Student access)
+GET {{baseUrl}}/3dd4fc61-75ff-4f71-b178-2672d523a5fe
+Authorization: Bearer {{studentToken}}
 
 ### Protected Routes (Instructor Only) ###
 
@@ -45,6 +63,34 @@ Content-Disposition: form-data; name="files"; filename="sample.pdf"
 Content-Type: application/pdf
 
 < /home/earljoe/Downloads/cypress2.pdf
+------WebKitFormBoundary--
+
+### Create video material
+POST {{baseUrl}}/course/e69bc7b7-1eb6-4cc0-b41f-94989ae1f7df
+Authorization: Bearer {{instructorToken}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary
+ 
+------WebKitFormBoundary
+Content-Disposition: form-data; name="title"
+
+Getting Started with Cypress
+------WebKitFormBoundary
+Content-Disposition: form-data; name="type"
+
+VIDEO
+------WebKitFormBoundary
+Content-Disposition: form-data; name="week"
+
+1
+------WebKitFormBoundary
+Content-Disposition: form-data; name="day"
+
+1
+------WebKitFormBoundary
+Content-Disposition: form-data; name="files"; filename="intro.mp4"
+Content-Type: video/mp4
+
+< /home/earljoe/Downloads/cypress_intro.mp4
 ------WebKitFormBoundary--
 
 ### Update material

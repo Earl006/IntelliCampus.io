@@ -13,6 +13,7 @@ export default class CourseMaterialController {
     this.updateMaterial = this.updateMaterial.bind(this);
     this.deleteMaterial = this.deleteMaterial.bind(this);
     this.getMaterialsByCourse = this.getMaterialsByCourse.bind(this);
+    this.getMaterialById = this.getMaterialById.bind(this); // Add binding for new method
   }
 
   async createMaterial(req: Request, res: Response) {
@@ -26,6 +27,7 @@ export default class CourseMaterialController {
           success: false,
           message: 'Title, type and files are required'
         });
+        return;
       }
 
       const material = await this.courseMaterialService.createMaterialWithUpload(
@@ -64,10 +66,17 @@ export default class CourseMaterialController {
         data: material
       });
     } catch (error: any) {
-       res.status(500).json({
-        success: false,
-        message: error.message || 'Failed to update material'
-      });
+      if (error.message === 'Course material not found') {
+        res.status(404).json({
+          success: false,
+          message: error.message
+        });
+      } else {
+        res.status(500).json({
+          success: false,
+          message: error.message || 'Failed to update material'
+        });
+      }
     }
   }
 
@@ -82,10 +91,17 @@ export default class CourseMaterialController {
         message: 'Course Material deleted'
       });
     } catch (error: any) {
-       res.status(500).json({
-        success: false,
-        message: error.message || 'Failed to delete material'
-      });
+      if (error.message === 'Course material not found') {
+        res.status(404).json({
+          success: false,
+          message: error.message
+        });
+      } else {
+        res.status(500).json({
+          success: false,
+          message: error.message || 'Failed to delete material'
+        });
+      }
     }
   }
 
@@ -103,6 +119,35 @@ export default class CourseMaterialController {
        res.status(500).json({
         success: false,
         message: error.message || 'Failed to fetch materials'
+      });
+    }
+  }
+
+  /**
+   * Get a specific material by ID
+   * GET /api/materials/:materialId
+   */
+  async getMaterialById(req: Request, res: Response) {
+    try {
+      const { materialId } = req.params;
+
+      const material = await this.courseMaterialService.getMaterialById(materialId);
+
+      if (!material) {
+         res.status(404).json({
+          success: false,
+          message: 'Course material not found'
+        });
+      }
+
+      res.status(200).json({
+        success: true,
+        data: material
+      });
+    } catch (error: any) {
+      res.status(500).json({
+        success: false,
+        message: error.message || 'Failed to fetch material'
       });
     }
   }

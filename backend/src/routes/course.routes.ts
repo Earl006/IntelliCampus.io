@@ -17,8 +17,6 @@ const upload = multer({
   }
 });
 
-
-
 // Public routes (authenticated users)
 router.get('/', courseController.getCourses);
 router.get('/:courseId', courseController.getCourse);
@@ -40,6 +38,11 @@ router.get('/u/enrollments', requireRole([Role.LEARNER]),  courseController.getE
 // Instructor routes
 router.use(requireRole([Role.INSTRUCTOR, Role.ADMIN]));
 
+// NEW ROUTES FOR INSTRUCTOR DASHBOARD
+router.get('/instructor/dashboard', courseController.getInstructorDashboardCourses);
+router.get('/:courseId/analytics', courseController.getCourseAnalytics);
+router.post('/:courseId/publish-verified', courseController.publishCourseWithValidation);
+
 // Course management
 router.post('/', 
   upload.single('bannerImage'), 
@@ -58,7 +61,5 @@ router.get('/:courseId/cohorts', courseController.getCourseCohorts);
 
 // Student management
 router.get('/:courseId/students', courseController.getCourseStudents);
-
-
 
 export default router;

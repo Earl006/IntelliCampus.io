@@ -403,4 +403,456 @@ export default class CourseService {
       },
     });
   }
+
+ /**
+ * Get detailed information about all courses taught by an instructor
+ * Includes statistics needed for the instructor dashboard
+ */
+async getInstructorCourses(instructorId: string) {
+  // Basic course info with enrollment counts
+  const courses = await this.prisma.course.findMany({
+    where: { instructorId },
+    include: {
+      _count: {
+        select: { 
+          enrollments: true,
+          materials: true,
+          reviews: true 
+        }
+      },
+      // Get most recent reviews
+      reviews: {
+        orderBy: {
+          createdAt: 'desc'
+        },
+        take: 3,
+        include: {
+          user: {
+            select: {
+              firstName: true,
+              lastName: true
+            }
+          }
+        }
+      },
+      // Get most recent enrollments
+      enrollments: {
+        orderBy: {
+          enrolledAt: 'desc'
+        },
+        take: 5,
+        include: {
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true
+            }
+          }
+        }
+      },
+      // Include categories for filtering
+      categories: true,
+      subCategories: true
+    }
+  });
+
+  // Enhance courses with additional analytics
+  const enhancedCourses = await Promise.all(courses.map(async course => {
+    // Calculate average rating
+    const avgRating = await this.prisma.review.aggregate({
+      where: { courseId: course.id },
+      _avg: { rating: true }
+    });
+
+    // Calculate completion statistics
+    const completionStats = await this.prisma.enrollment.aggregate({
+      where: { courseId: course.id },
+      _count: { id: true },
+      _avg: { 
+        progress: true 
+      }
+    });
+    
+    // Count completed enrollments separately
+    const completedEnrollments = await this.prisma.enrollment.count({
+      where: {
+        courseId: course.id,
+        completed: true
+      }
+    });
+    
+    // Calculate completion rate (percentage of enrollments that are completed)
+    const completionRate = completionStats._count.id > 0
+      ? (completedEnrollments / completionStats._count.id) * 100
+      : 0;
+
+    // Get revenue data
+    const revenue = await this.prisma.payment.aggregate({
+      where: {
+        courseId: course.id,
+        status: 'COMPLETED'
+      },
+      _sum: { amount: true },
+      _count: { id: true }
+    });
+
+    // Check if published and has materials
+    const isReadyToPublish = course._count.materials > 0 && 
+                            course.title && 
+                            course.description;
+
+    return {
+      ...course,
+      statistics: {
+        totalEnrollments: course._count.enrollments,
+        totalMaterials: course._count.materials,
+        totalReviews: course._count.reviews,
+        avgRating: avgRating._avg.rating || 0,
+        completionRate: parseFloat(completionRate.toFixed(1)),
+        avgProgress: parseFloat((completionStats._avg.progress || 0).toFixed(1)),
+        revenue: revenue._sum.amount || 0,
+        totalPayments: revenue._count.id || 0,
+        isReadyToPublish
+      }
+    };
+  }));
+
+  return enhancedCourses;
+}
+
+/**
+ * Get comprehensive analytics for a specific course
+ * Provides data needed for the course analytics dashboard
+ */
+async getCourseAnalytics(courseId: string) {
+  // Verify the course exists
+  const course = await this.prisma.course.findUnique({
+    where: { id: courseId },
+    include: {
+      _count: {
+        select: {
+          enrollments: true,
+          materials: true,
+          reviews: true
+        }
+      },
+      instructor: {
+        select: {
+          firstName: true,
+          lastName: true
+        }
+      }
+    }
+  });
+
+  if (!course) {
+    throw new Error('Course not found');
+  }
+
+  // 1. Enrollment trends (last 6 months)
+  const sixMonthsAgo = new Date();
+  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+
+  const enrollments = await this.prisma.enrollment.findMany({
+    where: {
+      courseId,
+      enrolledAt: { gte: sixMonthsAgo }
+    },
+    select: {
+      id: true,
+      enrolledAt: true,
+      progress: true,
+      completed: true
+    },
+    orderBy: {
+      enrolledAt: 'asc'
+    }
+  });
+
+  // Group enrollments by month
+  const enrollmentsByMonth = enrollments.reduce((acc, enrollment) => {
+    const month = enrollment.enrolledAt.toISOString().substring(0, 7); // YYYY-MM format
+    acc[month] = (acc[month] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  // Fill in missing months with zero values
+  const monthlyEnrollmentTrends: { month: string; count: number }[] = [];
+  for (let i = 0; i < 6; i++) {
+    const date = new Date();
+    date.setMonth(date.getMonth() - i);
+    const monthKey = date.toISOString().substring(0, 7);
+    monthlyEnrollmentTrends.unshift({
+      month: monthKey,
+      count: enrollmentsByMonth[monthKey] || 0
+    });
+  }
+
+  // 2. Completion rates
+  const completionStats = await this.prisma.enrollment.aggregate({
+    where: { courseId },
+    _count: { id: true },
+    _avg: { progress: true }
+  });
+  
+  // Count completed enrollments separately
+  const completedEnrollmentsCount = await this.prisma.enrollment.count({
+    where: { 
+      courseId,
+      completed: true 
+    }
+  });
+
+  // 3. Revenue data
+  const paymentStats = await this.prisma.payment.findMany({
+    where: { 
+      courseId,
+      status: 'COMPLETED'
+    },
+    select: {
+      amount: true,
+      createdAt: true
+    },
+    orderBy: {
+      createdAt: 'asc'
+    }
+  });
+
+  // Group revenue by month
+  const revenueByMonth = paymentStats.reduce((acc, payment) => {
+    const month = payment.createdAt.toISOString().substring(0, 7); // YYYY-MM format
+    acc[month] = (acc[month] || 0) + payment.amount;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const monthlyRevenueTrends: { month: string; amount: number }[] = [];
+  for (let i = 0; i < 6; i++) {
+    const date = new Date();
+    date.setMonth(date.getMonth() - i);
+    const monthKey = date.toISOString().substring(0, 7);
+    monthlyRevenueTrends.unshift({
+      month: monthKey,
+      amount: revenueByMonth[monthKey] || 0
+    });
+  }
+
+  // 4. Material engagement
+  const materials = await this.prisma.courseMaterial.findMany({
+    where: { courseId },
+    include: {
+      _count: {
+        select: { comments: true }
+      }
+    },
+    orderBy: {
+      week: 'asc'
+    }
+  });
+
+  // Sort materials by comment count to find most/least engaging
+  const sortedMaterials = [...materials].sort((a, b) => 
+    (b._count.comments) - (a._count.comments)
+  );
+
+  // 5. Student progress distribution
+  const progressGroups = [
+    { range: '0-25%', count: 0 },
+    { range: '26-50%', count: 0 },
+    { range: '51-75%', count: 0 },
+    { range: '76-99%', count: 0 },
+    { range: '100%', count: 0 }
+  ];
+
+  enrollments.forEach(enrollment => {
+    if (enrollment.progress <= 25) progressGroups[0].count++;
+    else if (enrollment.progress <= 50) progressGroups[1].count++;
+    else if (enrollment.progress <= 75) progressGroups[2].count++;
+    else if (enrollment.progress < 100) progressGroups[3].count++;
+    else progressGroups[4].count++;
+  });
+
+  // 6. Reviews analytics
+  const reviews = await this.prisma.review.findMany({
+    where: { courseId },
+    include: {
+      user: {
+        select: {
+          firstName: true,
+          lastName: true
+        }
+      }
+    },
+    orderBy: {
+      createdAt: 'desc'
+    }
+  });
+
+  const ratingDistribution = [0, 0, 0, 0, 0]; // 1-5 stars
+  reviews.forEach(review => {
+    if (review.rating >= 1 && review.rating <= 5) {
+      ratingDistribution[review.rating - 1]++;
+    }
+  });
+
+  return {
+    courseInfo: {
+      id: course.id,
+      title: course.title,
+      instructor: `${course.instructor.firstName} ${course.instructor.lastName}`,
+      enrollmentAnalytics: {
+        total: course._count.enrollments,
+        completionRate: completionStats._count.id > 0
+          ? (completedEnrollmentsCount / completionStats._count.id) * 100
+          : 0,
+        averageProgress: completionStats._avg.progress || 0,
+        monthlyTrends: monthlyEnrollmentTrends,
+        progressDistribution: progressGroups
+      }
+    },
+    revenueAnalytics: {
+      totalRevenue: paymentStats.reduce((sum, payment) => sum + payment.amount, 0),
+      monthlyTrends: monthlyRevenueTrends,
+      averageRevenuePerEnrollment: paymentStats.length > 0
+        ? paymentStats.reduce((sum, payment) => sum + payment.amount, 0) / paymentStats.length
+        : 0
+    },
+    contentEngagement: {
+      mostEngaging: sortedMaterials.slice(0, 3).map(m => ({
+        id: m.id,
+        title: m.title,
+        type: m.type,
+        week: m.week,
+        day: m.day,
+        commentCount: m._count.comments
+      })),
+      leastEngaging: sortedMaterials.slice(-3).map(m => ({
+        id: m.id,
+        title: m.title,
+        type: m.type,
+        week: m.week,
+        day: m.day,
+        commentCount: m._count.comments
+      })).reverse(),
+      weeklyEngagement: this.groupMaterialsByWeek(materials)
+    },
+    reviewAnalytics: {
+      averageRating: reviews.length > 0
+        ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
+        : 0,
+      ratingDistribution,
+      recentReviews: reviews.slice(0, 5).map(review => ({
+        id: review.id,
+        rating: review.rating,
+        comment: review.comment || '',
+        reviewer: `${review.user.firstName} ${review.user.lastName}`,
+        date: review.createdAt
+      }))
+    }
+  };
+}
+
+/**
+ * Helper method to group materials by week for analytics
+ */
+private groupMaterialsByWeek(materials: any[]) {
+  const weeks: Record<string, any> = {};
+  
+  materials.forEach(material => {
+    const week = material.week || 1;
+    if (!weeks[week]) {
+      weeks[week] = {
+        week,
+        totalMaterials: 0,
+        totalComments: 0,
+        materials: []
+      };
+    }
+    
+    weeks[week].totalMaterials++;
+    weeks[week].totalComments += material._count.comments;
+    weeks[week].materials.push({
+      id: material.id,
+      title: material.title,
+      type: material.type,
+      commentCount: material._count.comments
+    });
+  });
+  
+  return Object.values(weeks).sort((a, b) => a.week - b.week);
+}
+
+/**
+ * Publish a course after validation
+ * Ensures the course meets minimum requirements before publishing
+ */
+async publishCourse(courseId: string) {
+  // 1. Retrieve course with materials
+  const course = await this.prisma.course.findUnique({
+    where: { id: courseId },
+    include: {
+      _count: {
+        select: {
+          materials: true
+        }
+      }
+    }
+  });
+
+  if (!course) {
+    throw new Error('Course not found');
+  }
+
+  // 2. Validate course has minimum requirements to publish
+  const validationErrors = [];
+
+  if (!course.title || course.title.trim().length < 5) {
+    validationErrors.push('Course title is too short (minimum 5 characters)');
+  }
+
+  if (!course.description || course.description.trim().length < 20) {
+    validationErrors.push('Course description is too short (minimum 20 characters)');
+  }
+
+  if (!course.bannerImageUrl) {
+    validationErrors.push('Course banner image is required');
+  }
+
+  if (course._count.materials === 0) {
+    validationErrors.push('Course must have at least one material');
+  }
+
+  if (course.isPaid && (!course.price || course.price <= 0)) {
+    validationErrors.push('Paid courses must have a price greater than zero');
+  }
+
+  // Throw error with all validation failures if any exist
+  if (validationErrors.length > 0) {
+    throw new Error(`Cannot publish course: ${validationErrors.join(', ')}`);
+  }
+
+  // 3. Update course to published state
+  const publishedCourse = await this.prisma.course.update({
+    where: { id: courseId },
+    data: { 
+      isPublished: true 
+    }
+  });
+  
+  // 4. Optional: Create an announcement about course publication
+  try {
+    await this.prisma.announcement.create({
+      data: {
+        courseId,
+        title: 'Course Now Available!',
+        content: `${course.title} is now published and available for enrollment. Welcome to the course!`
+      }
+    });
+  } catch (error) {
+    // Log but don't fail if announcement creation fails
+    console.error('Failed to create course publication announcement:', error);
+  }
+
+  return publishedCourse;
+}
 }

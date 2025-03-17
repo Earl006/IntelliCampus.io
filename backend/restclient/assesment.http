@@ -1,0 +1,222 @@
+@baseUrl = http://localhost:3000/api
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ1YWM0OWViLWJiMmMtNDMyZS1iMDk0LTMyZjFkYTZkYmYzNiIsImVtYWlsIjoiZWFybGpvZTA2QG91dGxvb2suY29tIiwiZmlyc3ROYW1lIjoiRWFybGpvZSIsImxhc3ROYW1lIjoiS2FkaW1hIiwicGhvbmVOdW1iZXIiOiIwNzExMjI0NTg1MyIsInJvbGUiOiJJTlNUUlVDVE9SIiwiaWF0IjoxNzQyMjQ2ODE5LCJleHAiOjE3NDIyNTA0MTl9.rByMmpxeTvn3s43jQIBz6ojRG3eWHubkZqFJdvjnIqY
+@studentToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjE5YjdhZGVjLTJkNjktNDJiMS05ODc2LTQ0MmRlNzZhOGNlNSIsImVtYWlsIjoicmlnaHRtZW5jdXN0b216QGdtYWlsLmNvbSIsImZpcnN0TmFtZSI6IkpvaG4iLCJsYXN0TmFtZSI6IkRvZSIsInBob25lTnVtYmVyIjoiMDEwNjMyNjYyNyIsInJvbGUiOiJMRUFSTkVSIiwiaWF0IjoxNzQyMjQ2ODQzLCJleHAiOjE3NDIyNTA0NDN9.azf8ulPsTuhE2gqC1AwinXbQwF2RcUl7fVA47kxjZ4I
+
+### Environment Setup - Login as instructor to get JWT token
+# @name instructorLogin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "earljoe06@outlook.com", 
+  "password": "password"
+}
+
+### Environment Setup - Login as student to get JWT token
+# @name studentLogin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "rightmencustomz@gmail.com", 
+  "password": "password"
+}
+
+### Create a new assessment (instructor only)
+# Creates a new assessment with multiple choice and essay questions
+POST {{baseUrl}}/assesment/courses/92976e55-7da0-4e6a-a2b6-ae4bf8865446
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Module 1 Assessment",
+  "description": "Test your understanding of the core concepts covered in Module 1",
+  "passingScore": 70,
+  "issueCertificate": false,
+  "questions": [
+    {
+      "content": "What is the primary purpose of a database index?",
+      "type": "MULTIPLE_CHOICE",
+      "points": 10,
+      "options": [
+        {
+          "text": "To store backup copies of data",
+          "isCorrect": false
+        },
+        {
+          "text": "To speed up data retrieval operations",
+          "isCorrect": true
+        },
+        {
+          "text": "To validate data before insertion",
+          "isCorrect": false
+        },
+        {
+          "text": "To encrypt sensitive information",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "content": "Explain the differences between SQL and NoSQL databases and when you would choose one over the other.",
+      "type": "ESSAY",
+      "points": 20
+    }
+  ]
+}
+
+### Get all assessments for a course
+# Returns all assessments for the specified course
+GET {{baseUrl}}/assesment/courses/92976e55-7da0-4e6a-a2b6-ae4bf8865446
+Authorization: Bearer {{token}}
+
+### Get all assessments for a course (student view)
+# Returns student-safe version of assessments for the course
+GET {{baseUrl}}/assesment/courses/92976e55-7da0-4e6a-a2b6-ae4bf8865446
+Authorization: Bearer {{studentToken}}
+
+### Get assessment by ID
+# Returns detailed information about a specific assessment
+GET {{baseUrl}}/assesment/275dae16-3852-42d9-abed-b4ebac7196b8
+Authorization: Bearer {{token}}
+
+### Update an assessment
+# Updates an existing assessment's details
+PUT {{baseUrl}}/assesment/275dae16-3852-42d9-abed-b4ebac7196b8
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Updated Module 1 Assessment",
+  "description": "Revised test of core concepts covered in Module 1",
+  "questions": [
+    {
+      "id": "{questionId}",
+      "content": "What is the primary purpose of a database index?",
+      "type": "MULTIPLE_CHOICE",
+      "points": 15,
+      "options": [
+        {
+          "text": "To store backup copies of data",
+          "isCorrect": false
+        },
+        {
+          "text": "To speed up data retrieval operations",
+          "isCorrect": true
+        },
+        {
+          "text": "To validate data before insertion",
+          "isCorrect": false
+        },
+        {
+          "text": "To encrypt sensitive information",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "id": "{questionId}",
+      "content": "Explain the differences between SQL and NoSQL databases and when you would choose one over the other.",
+      "type": "ESSAY",
+      "points": 25
+    }
+  ]
+}
+
+### Delete an assessment
+# Deletes an assessment (only if it has no submissions)
+DELETE {{baseUrl}}/assesment/275dae16-3852-42d9-abed-b4ebac7196b8
+Authorization: Bearer {{token}}
+
+### Submit assessment as student
+# Submits student answers to an assessment
+POST {{baseUrl}}/assesment/275dae16-3852-42d9-abed-b4ebac7196b8/submit
+Authorization: Bearer {{studentToken}}
+Content-Type: application/json
+
+{
+  "answers": {
+    "{questionId1}": "B",
+    "{questionId2}": "SQL databases use structured query language and have a predefined schema, while NoSQL databases have dynamic schemas for unstructured data. SQL databases are vertically scalable and better for complex queries, while NoSQL databases are horizontally scalable and better for large datasets with simple query needs. I would choose SQL for applications requiring complex transactions like banking systems, and NoSQL for applications needing rapid development and scaling like social media platforms."
+  }
+}
+
+### Get all submissions for an assessment
+# Returns all student submissions for a specific assessment
+GET {{baseUrl}}/assesment/275dae16-3852-42d9-abed-b4ebac7196b8/submissions
+Authorization: Bearer {{token}}
+
+### Grade a submission
+# Instructor grades a student's submission
+POST {{baseUrl}}/assesment/submissions/{submissionId}/grade
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "grades": [
+    {
+      "questionId": "{questionId1}",
+      "score": 10,
+      "comment": "Correct answer"
+    },
+    {
+      "questionId": "{questionId2}",
+      "score": 18,
+      "comment": "Good explanation of differences, but could have expanded more on specific use cases"
+    }
+  ],
+  "feedback": "Good work overall! You've demonstrated a solid understanding of database concepts."
+}
+
+### Get analytics for an assessment
+# Returns performance statistics for an assessment
+GET {{baseUrl}}/assesment/275dae16-3852-42d9-abed-b4ebac7196b8/analytics
+Authorization: Bearer {{token}}
+
+### Get assessment (student view)
+# Returns a version of the assessment safe for students (no answers)
+GET {{baseUrl}}/assesment/275dae16-3852-42d9-abed-b4ebac7196b8
+Authorization: Bearer {{studentToken}}
+
+### Create a final assessment with certificate
+# Creates a comprehensive final assessment that issues a certificate on passing
+POST {{baseUrl}}/assesment/courses/92976e55-7da0-4e6a-a2b6-ae4bf8865446
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Final Course Assessment",
+  "description": "Comprehensive assessment covering all course materials",
+  "passingScore": 80,
+  "issueCertificate": true,
+  "questions": [
+    {
+      "content": "Which of the following is NOT a valid JavaScript data type?",
+      "type": "MULTIPLE_CHOICE",
+      "points": 10,
+      "options": [
+        {
+          "text": "undefined",
+          "isCorrect": false
+        },
+        {
+          "text": "boolean",
+          "isCorrect": false
+        },
+        {
+          "text": "float",
+          "isCorrect": true
+        },
+        {
+          "text": "symbol",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "content": "Explain the concept of closures in JavaScript and provide a practical example.",
+      "type": "ESSAY",
+      "points": 20
+    }
+  ]
+}

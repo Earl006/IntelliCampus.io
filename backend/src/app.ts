@@ -11,6 +11,9 @@ import coursematerialRoutes from './routes/course-material.routes';
 import courseRoutes from './routes/course.routes';
 import paymentRoutes from './routes/payment.routes';
 import ChatController from './controllers/chat.controller';
+import analyticsRoutes from './routes/analytics.routes';
+import assesmentRoutes from './routes/assesment.routes';
+import announcementRoutes from './routes/announcement.routes';
 
 const app = express();
 const prisma = new PrismaClient();
@@ -43,6 +46,9 @@ app.use('/api/comment-review/', commentReviewRoutes);
 app.use('/api/materials/', coursematerialRoutes);
 app.use('/api/courses/', courseRoutes);
 app.use('/api/payments/', paymentRoutes);
+app.use('/api/analytics', analyticsRoutes);
+app.use ('/api/assesment/', assesmentRoutes);
+app.use('/api/announcement', announcementRoutes);
 
 export { prisma, chatController }; // Export chatController
 export default app;

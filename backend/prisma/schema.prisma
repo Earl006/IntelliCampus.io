@@ -34,6 +34,10 @@ model User {
 
 
   Payout Payout[]
+
+  Submission Submission[]
+
+  Certificate Certificate[]
 }
 
 model Course {
@@ -57,6 +61,12 @@ model Course {
   cohorts         Cohort[]
   reviews         Review[]
   chatRooms       CourseChatRoom[]
+
+  Assessment Assessment[]
+
+  Announcement Announcement[]
+
+  Certificate Certificate[]
 }
 
 model Category {
@@ -185,6 +195,66 @@ model Payout {
   method       PayoutMethod
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
+}
+
+
+model Assessment {
+  id          String      @id @default(uuid())
+  title       String
+  description String?
+  courseId    String
+  course      Course      @relation(fields: [courseId], references: [id])
+  questions   Question[]
+  submissions Submission[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model Question {
+  id           String   @id @default(uuid())
+  assessmentId String
+  assessment   Assessment @relation(fields: [assessmentId], references: [id])
+  content      String
+  type         String   // "multiple-choice", "essay", etc.
+  options      Json?    // For multiple choice questions
+  correctAnswer String?
+  points       Int      @default(1)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Submission {
+  id           String   @id @default(uuid())
+  assessmentId String
+  assessment   Assessment @relation(fields: [assessmentId], references: [id])
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  answers      Json
+  score        Float?
+  feedback     String?
+  submittedAt  DateTime @default(now())
+  gradedAt     DateTime?
+}
+
+model Announcement {
+  id        String   @id @default(uuid())
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id])
+  title     String
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Certificate {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  courseId   String
+  course     Course   @relation(fields: [courseId], references: [id])
+  issueDate  DateTime @default(now())
+  templateId String?
+  pdfUrl     String?
 }
 
 enum PayoutMethod {

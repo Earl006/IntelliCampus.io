@@ -24,6 +24,11 @@ router.post('/profile/deactivate', userController.deactivateAccount);
 // Instructor related routes - learners can request, admin can view
 router.post('/instructor/request', userController.requestInstructorRole);
 
+// Instructor student management routes
+router.get('/instructor/students/:studentId', requireRole([Role.INSTRUCTOR]), userController.getStudentDetailsForInstructor);
+router.get('/instructor/students/:studentId/courses/:courseId/progress', requireRole([Role.INSTRUCTOR]), userController.getStudentProgressInCourse);
+router.put('/instructor/enrollments/:enrollmentId/progress', requireRole([Role.INSTRUCTOR]), userController.updateStudentProgress);
+
 // Admin only routes - require ADMIN role
 router.use('/admin', requireRole([Role.ADMIN]));
 router.get('/admin/all', userController.getAllUsers);

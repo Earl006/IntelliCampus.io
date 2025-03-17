@@ -31,7 +31,6 @@ Content-Type: application/json
     "password": "password"
 }
 
-
 ### Public Routes ###
 
 ### List all courses
@@ -70,6 +69,18 @@ POST {{baseUrl}}/cohorts/2b652a2b-6b7a-4a18-ba3f-fda3d2eb2cdb/defer/251a78cc-076
 Authorization: Bearer {{studentToken}}
 
 ### Instructor Routes ###
+
+### Get instructor dashboard courses with statistics
+GET {{baseUrl}}/instructor/dashboard
+Authorization: Bearer {{instructorToken}}
+
+### Get detailed course analytics
+GET {{baseUrl}}/92976e55-7da0-4e6a-a2b6-ae4bf8865446/analytics
+Authorization: Bearer {{instructorToken}}
+
+### Publish course with validation
+POST {{baseUrl}}/92976e55-7da0-4e6a-a2b6-ae4bf8865446/publish-verified
+Authorization: Bearer {{instructorToken}}
 
 ### Create course with banner
 POST {{baseUrl}}
@@ -132,7 +143,7 @@ Content-Disposition: form-data; name="price"
 DELETE {{baseUrl}}/e69bc7b7-1eb6-4cc0-b41f-94989ae1f7df
 Authorization: Bearer {{instructorToken}}
 
-### Publish/Unpublish course
+### Publish/Unpublish course (simple toggle)
 POST {{baseUrl}}/92976e55-7da0-4e6a-a2b6-ae4bf8865446/publish
 Authorization: Bearer {{instructorToken}}
 Content-Type: application/json
@@ -161,4 +172,3 @@ Authorization: Bearer {{instructorToken}}
 ### List enrolled students
 GET {{baseUrl}}/92976e55-7da0-4e6a-a2b6-ae4bf8865446/students
 Authorization: Bearer {{instructorToken}}
-

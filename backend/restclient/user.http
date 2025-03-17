@@ -74,6 +74,34 @@ Authorization: Bearer {{authToken}}
 POST {{baseUrl}}/users/instructor/request
 Authorization: Bearer {{authToken}}
 
+### Instructor Student Management Routes ###
+
+### Get student details for instructor
+GET {{baseUrl}}/users/instructor/students/19b7adec-2d69-42b1-9876-442de76a8ce5
+Authorization: Bearer {{authToken}}
+
+### Get student progress in specific course
+GET {{baseUrl}}/users/instructor/students/19b7adec-2d69-42b1-9876-442de76a8ce5/courses/92976e55-7da0-4e6a-a2b6-ae4bf8865446/progress
+Authorization: Bearer {{authToken}}
+
+### Update student progress (mark 75% complete)
+PUT {{baseUrl}}/users/instructor/enrollments/b5c83f70-256a-4d9d-a72c-829563417bc6/progress
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "progress": 75
+}
+
+### Update student progress (mark 100% complete - triggers certificate)
+PUT {{baseUrl}}/users/instructor/enrollments/b5c83f70-256a-4d9d-a72c-829563417bc6/progress
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "progress": 100
+}
+
 ### Protected Admin Routes ###
 
 ### Get all users
@@ -124,4 +152,3 @@ Authorization: Bearer {{adminToken}}
 ### Activate user account
 POST {{baseUrl}}/users/admin/activate/d5ac49eb-bb2c-432e-b094-32f1da6dbf36
 Authorization: Bearer {{adminToken}}
-

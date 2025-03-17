@@ -30,6 +30,9 @@ export default class CourseController {
     this.enrollStudent = this.enrollStudent.bind(this);
     this.deferStudent = this.deferStudent.bind(this);
     this.getEnrollmentsForUser = this.getEnrollmentsForUser.bind(this);
+    this.getInstructorDashboardCourses = this.getInstructorDashboardCourses.bind(this);
+    this.getCourseAnalytics = this.getCourseAnalytics.bind(this);
+    this.publishCourseWithValidation = this.publishCourseWithValidation.bind(this);
   }
 
   async createCourse(req: Request, res: Response) {
@@ -352,4 +355,112 @@ export default class CourseController {
       });
     }
   }
+
+ 
+  async getInstructorDashboardCourses(req: Request, res: Response) {
+    try {
+      const instructorId = req.user.id;
+      
+      const courses = await this.courseService.getInstructorCourses(instructorId);
+
+      res.status(200).json({
+        success: true,
+        data: courses
+      });
+    } catch (error: any) {
+      res.status(500).json({
+        success: false,
+        message: error.message || 'Failed to fetch instructor dashboard courses'
+      });
+    }
+  }
+
+  /**
+   * Get detailed analytics for a specific course
+   * GET /api/courses/:courseId/analytics
+   */
+  async getCourseAnalytics(req: Request, res: Response) {
+    try {
+      const { courseId } = req.params;
+      const instructorId = req.user.id;
+      
+      // Check if course exists and belongs to this instructor
+      const course = await this.courseService.getCourse(courseId);
+      
+      if (!course) {
+         res.status(404).json({
+          success: false,
+          message: 'Course not found'
+        });
+      }
+      
+      if (course!.instructorId !== instructorId) {
+         res.status(403).json({
+          success: false,
+          message: 'You do not have permission to access analytics for this course'
+        });
+      }
+      
+      const analytics = await this.courseService.getCourseAnalytics(courseId);
+
+      res.status(200).json({
+        success: true,
+        data: analytics
+      });
+    } catch (error: any) {
+      res.status(500).json({
+        success: false,
+        message: error.message || 'Failed to fetch course analytics'
+      });
+    }
+  }
+
+  /**
+   * Publish a course with validation checks
+   * POST /api/courses/:courseId/publish-verified
+   */
+  async publishCourseWithValidation(req: Request, res: Response) {
+    try {
+      const { courseId } = req.params;
+      const instructorId = req.user.id;
+      
+      // Check if course belongs to this instructor
+      const course = await this.courseService.getCourse(courseId);
+      
+      if (!course) {
+          res.status(404).json({
+          success: false,
+          message: 'Course not found'
+        });
+      }
+      
+      if (course!.instructorId !== instructorId) {
+         res.status(403).json({
+          success: false,
+          message: 'You do not have permission to publish this course'
+        });
+      }
+      
+      const publishedCourse = await this.courseService.publishCourse(courseId);
+      
+      res.status(200).json({
+        success: true,
+        message: 'Course published successfully',
+        data: publishedCourse
+      });
+    } catch (error: any) {
+      // If the error is about validation, send a 400 status
+      if (error.message.includes('Cannot publish course:')) {
+         res.status(400).json({
+          success: false,
+          message: error.message
+        });
+      }
+      
+      res.status(500).json({
+        success: false,
+        message: error.message || 'Failed to publish course'
+      });
+    }
+}
 }

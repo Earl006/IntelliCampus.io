@@ -131,4 +131,15 @@ async createMaterialWithUpload(
     await redisClient.set(`materials:${courseId}`, JSON.stringify(materials));
     return materials;
   }
+
+  /**
+   * Retrieve a single material by its ID.
+   * @param {string} materialId - The ID of the material to fetch.
+   */
+  async getMaterialById(materialId:
+    string): Promise<CourseMaterial | null> {
+    return prisma.courseMaterial.findUnique({
+      where: { id: materialId },
+    });
+  }
 }

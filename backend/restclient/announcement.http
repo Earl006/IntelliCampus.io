@@ -1,0 +1,75 @@
+@baseUrl = http://localhost:3000/api
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ1YWM0OWViLWJiMmMtNDMyZS1iMDk0LTMyZjFkYTZkYmYzNiIsImVtYWlsIjoiZWFybGpvZTA2QG91dGxvb2suY29tIiwiZmlyc3ROYW1lIjoiRWFybGpvZSIsImxhc3ROYW1lIjoiS2FkaW1hIiwicGhvbmVOdW1iZXIiOiIwNzExMjI0NTg1MyIsInJvbGUiOiJJTlNUUlVDVE9SIiwiaWF0IjoxNzQyMjQ2ODE5LCJleHAiOjE3NDIyNTA0MTl9.rByMmpxeTvn3s43jQIBz6ojRG3eWHubkZqFJdvjnIqY
+@studentToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjE5YjdhZGVjLTJkNjktNDJiMS05ODc2LTQ0MmRlNzZhOGNlNSIsImVtYWlsIjoicmlnaHRtZW5jdXN0b216QGdtYWlsLmNvbSIsImZpcnN0TmFtZSI6IkpvaG4iLCJsYXN0TmFtZSI6IkRvZSIsInBob25lTnVtYmVyIjoiMDEwNjMyNjYyNyIsInJvbGUiOiJMRUFSTkVSIiwiaWF0IjoxNzQyMjQ2ODQzLCJleHAiOjE3NDIyNTA0NDN9.azf8ulPsTuhE2gqC1AwinXbQwF2RcUl7fVA47kxjZ4I
+
+### Environment Setup - Login as instructor to get JWT token
+# @name instructorLogin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "earljoe06@outlook.com", 
+  "password": "password"
+}
+
+### Environment Setup - Login as student to get JWT token
+# @name studentLogin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "rightmencustomz@gmail.com", 
+  "password": "password"
+}
+
+### Create a new announcement
+# Creates a new announcement for a course
+POST {{baseUrl}}/announcement/courses/92976e55-7da0-4e6a-a2b6-ae4bf8865446
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Important Course Update",
+  "content": "Dear students, I've updated the course materials for week 3. Please review the new content before our next live session on Thursday."
+}
+
+### Get all announcements for a specific instructor
+# Returns all announcements created by the logged-in instructor
+GET {{baseUrl}}/announcement/instructor
+Authorization: Bearer {{token}}
+
+### Get all announcements for a course (instructor view)
+# Returns all announcements for a specific course
+GET {{baseUrl}}/announcement/courses/92976e55-7da0-4e6a-a2b6-ae4bf8865446
+Authorization: Bearer {{token}}
+
+### Get all announcements for a course (student view)
+# Returns all announcements for a specific course
+GET {{baseUrl}}/announcement/courses/92976e55-7da0-4e6a-a2b6-ae4bf8865446
+Authorization: Bearer {{studentToken}}
+
+### Delete an announcement
+# Deletes a specific announcement
+DELETE {{baseUrl}}/announcement/d8f3a1e2-b6c9-4a8f-9e7d-5c4b3a2f1e0d
+Authorization: Bearer {{token}}
+
+### Create an announcement with formatting
+# Creates a new announcement with rich text formatting
+POST {{baseUrl}}/announcement/courses/92976e55-7da0-4e6a-a2b6-ae4bf8865446
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Assignment Deadline Extended",
+  "content": "# Important Update\n\nDue to multiple requests, I've decided to extend the deadline for Assignment 2 by **48 hours**.\n\n## New Deadline\n* Date: March 25, 2023\n* Time: 11:59 PM\n\nPlease use this additional time wisely and reach out if you have any questions!"
+}
+
+### Create a new announcement for upcoming live session
+POST {{baseUrl}}/announcement/courses/92976e55-7da0-4e6a-a2b6-ae4bf8865446
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Live Q&A Session - Next Monday",
+  "content": "I'll be hosting a live Q&A session on Monday, March 22 at 7:00 PM EST to address questions about the midterm exam. Topics we'll cover include:\n\n1. Exam format\n2. Key concepts to review\n3. Practice problem solutions\n\nThe session will be recorded for those who cannot attend live. Looking forward to seeing you there!"
+}

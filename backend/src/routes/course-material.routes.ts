@@ -23,6 +23,9 @@ router.use(authenticateJWT);
 // Public routes (for authenticated users)
 router.get('/course/:courseId', courseMaterialController.getMaterialsByCourse);
 
+// Add new route for getting a single material
+router.get('/:materialId', courseMaterialController.getMaterialById);
+
 // Protected routes (instructors only)
 router.use(requireRole([Role.INSTRUCTOR, Role.ADMIN]));
 

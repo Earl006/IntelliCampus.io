@@ -2,7 +2,7 @@
 # node tests/chat/websocket.test.js
 
 @authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImZmODIxNDgxLWZiOWItNDg4Ni1iZjZmLWQ2YmVkMWVkZjJiZSIsImVtYWlsIjoiYW5nZWxha29sd2FAZ21haWwuY29tIiwiZmlyc3ROYW1lIjoiSmFuZSIsImxhc3ROYW1lIjoiRG9lIiwicGhvbmVOdW1iZXIiOiIwNzEyMzQ1Njc4Iiwicm9sZSI6IkxFQVJORVIiLCJpYXQiOjE3NDE3NzI5NTIsImV4cCI6MTc0MTc3NjU1Mn0.lX1vFWL_urhig1pzG3v_pcFWpmGI4_EWyTvVSSzc45g
-
+@instructorToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ1YWM0OWViLWJiMmMtNDMyZS1iMDk0LTMyZjFkYTZkYmYzNiIsImVtYWlsIjoiZWFybGpvZTA2QG91dGxvb2suY29tIiwicGhvbmVOdW1iZXIiOiIwNzExMjI0NTg1MyIsInJvbGUiOiJJTlNUUlVDVE9SIiwiaWF0IjoxNzM4NTkwMjU3LCJleHAiOjE3Mzg1OTM4NTd9.9U8WsagC2TrPb7EttDWHuEIdsAUF2REPmBS5p-DwyYg
 
 @baseUrl = http://localhost:3000/api/chat
 @courseId = 123e4567-e89b-12d3-a456-426614174000
@@ -20,6 +20,15 @@ Content-Type: application/json
     "password": "password123"
 }
 
+### Get instructor auth token
+# @name instructorLogin
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+    "email": "earljoe06@outlook.com",
+    "password": "password"
+}
 
 ### Course Chat Operations ###
 
@@ -58,3 +67,32 @@ Content-Type: application/json
 {
     "content": "Test message in cohort chat"
 }
+
+### Instructor Message Operations ###
+
+### Get all messages for instructor
+# Returns all messages from courses and cohorts managed by the instructor
+GET {{baseUrl}}/instructor/messages
+Authorization: Bearer {{instructorToken}}
+
+### Mark messages as read
+# Mark multiple messages as read at once
+POST {{baseUrl}}/instructor/mark-read
+Authorization: Bearer {{instructorToken}}
+Content-Type: application/json
+
+{
+    "messageIds": [
+        "message-uuid-1",
+        "message-uuid-2",
+        "message-uuid-3"
+    ]
+}
+
+### Get real course chat room info (to get actual roomId)
+GET {{baseUrl}}/course/92976e55-7da0-4e6a-a2b6-ae4bf8865446/room/info
+Authorization: Bearer {{instructorToken}}
+
+### Get real cohort chat room info (to get actual roomId)
+GET {{baseUrl}}/cohort/2b652a2b-6b7a-4a18-ba3f-fda3d2eb2cdb/room/info
+Authorization: Bearer {{instructorToken}}

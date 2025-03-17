@@ -205,4 +205,99 @@ export default class UserController {
       res.status(400).json({ message: error.message || error });
     }
   }
+
+
+   /**
+   * Get detailed information about a student for an instructor
+   * GET /api/users/instructor/students/:studentId
+   */
+   async getStudentDetailsForInstructor(req: Request, res: Response) {
+    try {
+      const { studentId } = req.params;
+      const instructorId = req.user.id;
+      
+      if (!studentId) {
+         res.status(400).json({ 
+          success: false, 
+          message: 'Student ID is required' 
+        });
+      }
+      
+      const details = await userService.getStudentDetailsForInstructor(studentId, instructorId);
+      res.status(200).json({
+        success: true,
+        data: details
+      });
+    } catch (error: any) {
+      res.status(error.message === "Student not found" ? 404 : 400).json({ 
+        success: false, 
+        message: error.message || error 
+      });
+    }
+  }
+
+  /**
+   * Get detailed progress information for a specific student in a specific course
+   * GET /api/users/instructor/students/:studentId/courses/:courseId/progress
+   */
+  async getStudentProgressInCourse(req: Request, res: Response) {
+    try {
+      const { courseId, studentId } = req.params;
+      
+      if (!courseId || !studentId) {
+         res.status(400).json({ 
+          success: false, 
+          message: 'Course ID and Student ID are required' 
+        });
+      }
+      
+      const progress = await userService.getStudentProgressInCourse(courseId, studentId);
+      res.status(200).json({
+        success: true,
+        data: progress
+      });
+    } catch (error: any) {
+      res.status(error.message === "Student is not enrolled in this course" ? 404 : 400).json({ 
+        success: false, 
+        message: error.message || error 
+      });
+    }
+  }
+
+  /**
+   * Update the progress percentage for a specific enrollment
+   * PUT /api/users/instructor/enrollments/:enrollmentId/progress
+   */
+  async updateStudentProgress(req: Request, res: Response) {
+    try {
+      const { enrollmentId } = req.params;
+      const { progress } = req.body;
+      
+      if (!enrollmentId) {
+         res.status(400).json({ 
+          success: false, 
+          message: 'Enrollment ID is required' 
+        });
+      }
+      
+      if (progress === undefined || progress === null) {
+         res.status(400).json({ 
+          success: false, 
+          message: 'Progress value is required' 
+        });
+      }
+      
+      const updatedEnrollment = await userService.updateStudentProgress(enrollmentId, progress);
+      res.status(200).json({
+        success: true,
+        data: updatedEnrollment,
+        message: 'Student progress updated successfully'
+      });
+    } catch (error: any) {
+      res.status(error.message === "Enrollment not found" ? 404 : 400).json({ 
+        success: false, 
+        message: error.message || error 
+      });
+    }
+  }
 }

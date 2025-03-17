@@ -5,6 +5,7 @@ import { authenticateSocket } from './middlewares/auth.middleware';
 import ChatService from './services/chat.service';
 import CourseService from './services/course.service';
 import { PaymentService } from './services/payment.service';
+import 'reflect-metadata';
 
 // Configure port
 const port = process.env.PORT || 3000;

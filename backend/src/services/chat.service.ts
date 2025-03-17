@@ -215,6 +215,254 @@ async postMessageToCohortChat(cohortChatRoomId: string, senderId: string, conten
       return 0;
     }
   }
+  /**
+ * Fetches all relevant chat messages for an instructor from courses and cohorts they manage
+ * Includes metadata about the message source for better context
+ */
+async getInstructorMessages(instructorId: string) {
+  try {
+    // Step 1: Find all courses taught by this instructor
+    const instructorCourses = await this.prisma.course.findMany({
+      where: { instructorId },
+      select: { 
+        id: true,
+        title: true,
+        chatRooms: {
+          select: { id: true }
+        }
+      }
+    });
+
+    // Step 2: Find all cohorts managed by this instructor
+    const instructorCohorts = await this.prisma.cohort.findMany({
+      where: { instructorId },
+      select: { 
+        id: true,
+        name: true,
+        chatRooms: {
+          select: { id: true }
+        },
+        course: {
+          select: {
+            id: true,
+            title: true
+          }
+        }
+      }
+    });
+
+    // Step 3: Extract all chat room IDs
+    const courseChatRoomIds = instructorCourses.flatMap(course => 
+      course.chatRooms.map(room => room.id)
+    );
+    
+    const cohortChatRoomIds = instructorCohorts.flatMap(cohort => 
+      cohort.chatRooms.map(room => room.id)
+    );
+
+    // Step 4: Get messages from these rooms with pagination
+    const courseMessages = await this.prisma.chatMessage.findMany({
+      where: {
+        courseChatRoomId: { in: courseChatRoomIds }
+      },
+      include: {
+        sender: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true
+          }
+        },
+        courseChatRoom: {
+          select: {
+            course: {
+              select: {
+                id: true,
+                title: true
+              }
+            }
+          }
+        }
+      },
+      orderBy: {
+        sentAt: 'desc'
+      },
+      take: 100 // Limit to avoid overwhelming response
+    });
+
+    const cohortMessages = await this.prisma.chatMessage.findMany({
+      where: {
+        cohortChatRoomId: { in: cohortChatRoomIds }
+      },
+      include: {
+        sender: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true
+          }
+        },
+        cohortChatRoom: {
+          select: {
+            cohort: {
+              select: {
+                id: true,
+                name: true,
+                course: {
+                  select: {
+                    id: true,
+                    title: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      orderBy: {
+        sentAt: 'desc'
+      },
+      take: 100 // Limit to avoid overwhelming response
+    });
+
+    // Step 5: Create lookup maps for course and cohort info
+    const courseMap = instructorCourses.reduce((map, course) => {
+      map[course.id] = course.title;
+      return map;
+    }, {} as Record<string, string>);
+
+    const cohortMap = instructorCohorts.reduce((map, cohort) => {
+      map[cohort.id] = {
+        name: cohort.name,
+        courseTitle: cohort.course.title,
+        courseId: cohort.course.id
+      };
+      return map;
+    }, {} as Record<string, any>);
+
+    // Step 6: Transform and combine messages with context information
+    const transformedCourseMessages = courseMessages.map(message => {
+      const courseId = message.courseChatRoom?.course.id;
+      const courseTitle = message.courseChatRoom?.course.title || (courseId ? courseMap[courseId] : undefined) || 'Unknown Course';
+      
+      return {
+        id: message.id,
+        content: message.content,
+        sentAt: message.sentAt,
+        sender: {
+          id: message.sender.id,
+          name: `${message.sender.firstName} ${message.sender.lastName}`.trim()
+        },
+        source: {
+          type: 'course',
+          id: courseId,
+          title: courseTitle,
+          roomId: message.courseChatRoomId
+        },
+        isFromInstructor: message.senderId === instructorId
+      };
+    });
+
+    const transformedCohortMessages = cohortMessages.map(message => {
+      const cohortId = message.cohortChatRoom?.cohort.id;
+      const cohortInfo = message.cohortChatRoom?.cohort || 
+                        (cohortId && cohortMap[cohortId] ? cohortMap[cohortId] : { name: 'Unknown Cohort', courseTitle: 'Unknown Course' });
+      
+      return {
+        id: message.id,
+        content: message.content,
+        sentAt: message.sentAt,
+        sender: {
+          id: message.sender.id,
+          name: `${message.sender.firstName} ${message.sender.lastName}`.trim()
+        },
+        source: {
+          type: 'cohort',
+          id: cohortId,
+          title: cohortInfo.name,
+          courseId: cohortInfo.course?.id || cohortInfo.courseId,
+          courseTitle: cohortInfo.course?.title || cohortInfo.courseTitle
+        },
+        roomId: message.cohortChatRoomId,
+        isFromInstructor: message.senderId === instructorId
+      };
+    });
+
+    // Step 7: Combine and sort by most recent
+    const allMessages = [...transformedCourseMessages, ...transformedCohortMessages]
+      .sort((a, b) => b.sentAt.getTime() - a.sentAt.getTime());
+
+    // Step 8: Group messages by conversation
+    const conversationGroups = this.groupMessagesByConversation(allMessages);
+
+    return {
+      messages: allMessages,
+      conversations: conversationGroups,
+      unreadCount: this.countUnreadMessages(allMessages) // You would need to track read status
+    };
+  } catch (error: any) {
+    console.error('Error fetching instructor messages:', error);
+    throw new Error(`Failed to retrieve instructor messages: ${error.message}`);
+  }
+}
+
+/**
+ * Helper method to group messages by conversation for better UI organization
+ */
+private groupMessagesByConversation(messages: any[]) {
+  const conversations = new Map();
+  
+  messages.forEach(message => {
+    let conversationKey;
+    let conversationTitle;
+    
+    if (message.source.type === 'course') {
+      conversationKey = `course_${message.source.id}`;
+      conversationTitle = `Course: ${message.source.title}`;
+    } else {
+      conversationKey = `cohort_${message.source.id}`;
+      conversationTitle = `Cohort: ${message.source.title} (${message.source.courseTitle})`;
+    }
+    
+    if (!conversations.has(conversationKey)) {
+      conversations.set(conversationKey, {
+        id: conversationKey,
+        title: conversationTitle,
+        type: message.source.type,
+        entityId: message.source.id,
+        roomId: message.roomId,
+        lastMessage: message.content,
+        lastMessageAt: message.sentAt,
+        messages: [],
+        unreadCount: 0 // Would need to track read status
+      });
+    }
+    
+    const conversation = conversations.get(conversationKey);
+    if (conversation.messages.length < 5) { // Limit messages per conversation in this summary
+      conversation.messages.push(message);
+    }
+    
+    // Update last message if this is newer
+    if (message.sentAt > conversation.lastMessageAt) {
+      conversation.lastMessage = message.content;
+      conversation.lastMessageAt = message.sentAt;
+    }
+  });
+  
+  return Array.from(conversations.values())
+    .sort((a, b) => b.lastMessageAt.getTime() - a.lastMessageAt.getTime());
+}
+
+/**
+ * Helper method to count unread messages
+ * You would need to track read status in your database
+ */
+private countUnreadMessages(messages: any[]) {
+  // For now, returning 0 as we don't track read status yet
+  // You would need to implement tracking of message read status
+  return 0;
+}
 
   async debugCohortSocketRooms(roomId: string) {
     try {
