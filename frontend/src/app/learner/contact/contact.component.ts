@@ -2,12 +2,15 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+import { FooterComponent } from "../footer/footer.component";
+import { NavbarComponent } from "../navbar/navbar.component";
 
 @Component({
   selector: 'app-contact',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, FooterComponent, NavbarComponent],
   template: `
+  <app-navbar></app-navbar>
   <div class="min-h-screen relative overflow-hidden bg-white">
     <!-- Background with subtle overlay -->
     <div class="absolute inset-0">
@@ -186,6 +189,7 @@ import { RouterModule } from '@angular/router';
       </div>
     </div>
   </div>
+  <app-footer></app-footer>
 `,
   styles: [`
     :host {

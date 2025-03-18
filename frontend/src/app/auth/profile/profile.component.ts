@@ -7,11 +7,13 @@ import { trigger, transition, style, animate } from '@angular/animations';
 // Import the User and ApiResponse interfaces from the UserService
 import { UserService, User, ApiResponse } from '../../services/user.service';
 import { AuthService } from '../../services/auth.service';
+import { FooterComponent } from "../../learner/footer/footer.component";
+import { NavbarComponent } from "../../learner/navbar/navbar.component";
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, FooterComponent, NavbarComponent],
   templateUrl: './profile.component.html',
   animations: [
     trigger('fadeIn', [

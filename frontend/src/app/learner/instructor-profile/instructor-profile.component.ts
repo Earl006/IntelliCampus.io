@@ -3,6 +3,8 @@ import { ActivatedRoute, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { User, UserService } from '../../services/user.service';
+import { FooterComponent } from "../footer/footer.component";
+import { NavbarComponent } from "../navbar/navbar.component";
 
 export interface Course {
   id?: string;
@@ -30,7 +32,7 @@ interface InstructorResponse {
 @Component({
   selector: 'app-instructor-profile',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, FooterComponent, NavbarComponent],
   templateUrl: './instructor-profile.component.html',
   styleUrls: ['./instructor-profile.component.css'],
   animations: [

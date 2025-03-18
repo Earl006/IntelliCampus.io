@@ -156,4 +156,42 @@ export class CourseService {
     }
     return throwError(() => errorMessage);
   }
+
+
+  /**
+ * Get all courses taught by the current instructor with dashboard statistics
+ * @returns Observable with dashboard course data
+ */
+getInstructorDashboardCourses(): Observable<any> {
+  return this.http.get<any>(
+    `${this.apiUrl}/instructor/dashboard`, 
+    { headers: this.tokenHeader }
+  ).pipe(catchError(this.handleError));
+}
+
+/**
+ * Get detailed analytics for a specific course
+ * @param courseId The ID of the course
+ * @returns Observable with course analytics data
+ */
+getCourseAnalytics(courseId: string): Observable<any> {
+  return this.http.get<any>(
+    `${this.apiUrl}/${courseId}/analytics`, 
+    { headers: this.tokenHeader }
+  ).pipe(catchError(this.handleError));
+}
+
+/**
+ * Publish a course with validation checks
+ * Ensures the course meets all requirements before publishing
+ * @param courseId The ID of the course to publish
+ * @returns Observable with the published course
+ */
+publishCourseWithValidation(courseId: string): Observable<Course> {
+  return this.http.post<Course>(
+    `${this.apiUrl}/${courseId}/publish-verified`, 
+    {}, 
+    { headers: this.headers }
+  ).pipe(catchError(this.handleError));
+}
 }

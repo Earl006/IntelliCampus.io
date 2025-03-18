@@ -1,0 +1,71 @@
+<aside 
+  class="bg-gray-900 text-white transition-all duration-300 ease-in-out z-20"
+  [class.w-64]="!collapsed"
+  [class.w-20]="collapsed">
+  
+  <!-- Logo Section -->
+  <div class="h-16 flex items-center px-4 border-b border-gray-800">
+    <a routerLink="/instructor/dashboard" class="flex items-center">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mr-2 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+        <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z" />
+      </svg>
+      <span class="text-lg font-semibold" *ngIf="!collapsed">IntelliCampus</span>
+    </a>
+    
+    <!-- Collapse Button (visible on larger screens) -->
+    <button 
+      (click)="onToggleSidebar()" 
+      class="ml-auto hidden lg:block p-1 rounded-full hover:bg-gray-800 focus:outline-none"
+      [attr.aria-label]="collapsed ? 'Expand sidebar' : 'Collapse sidebar'">
+      <svg class="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path *ngIf="!collapsed" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+        <path *ngIf="collapsed" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+      </svg>
+    </button>
+  </div>
+  
+  <!-- Menu Items -->
+  <nav class="mt-5 px-2">
+    <div *ngFor="let item of menuItems" class="mb-2">
+      <!-- Main Menu Item -->
+      <div 
+        (click)="toggleSubmenu(item)"
+        class="flex items-center px-4 py-3 rounded-lg text-sm cursor-pointer transition-colors"
+        [class.bg-blue-700]="isActive(item.route || '') || isChildActive(item)"
+        [class.hover:bg-gray-800]="!isActive(item.route || '') && !isChildActive(item)">
+        
+        <!-- Icon -->
+        <svg class="w-5 h-5 mr-3" [class.mr-0]="collapsed" fill="none" viewBox="0 0 24 24" stroke="currentColor" [innerHTML]="item.icon"></svg>
+        
+        <!-- Title & Dropdown Indicator -->
+        <div class="flex-1 flex items-center justify-between" *ngIf="!collapsed">
+          <span>{{ item.title }}</span>
+          
+          <svg *ngIf="item.children" class="w-4 h-4 transition-transform" 
+               [class.transform]="item.expanded" [class.rotate-180]="item.expanded"
+               fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </div>
+      </div>
+      
+      <!-- Submenu Items -->
+      <div *ngIf="item.expanded && item.children && !collapsed" class="mt-2 pl-6 space-y-1 text-sm">
+        <a 
+          *ngFor="let child of item.children"
+          [routerLink]="child.route"
+          routerLinkActive="bg-gray-800 text-white"
+          class="block px-4 py-2 rounded-md hover:bg-gray-800 transition-colors">
+          {{ child.title }}
+        </a>
+      </div>
+    </div>
+  </nav>
+  
+  <!-- Mobile Expanded Menu Indicator -->
+  <div *ngIf="collapsed" class="absolute bottom-0 left-0 right-0 p-4 text-center text-xs text-gray-500">
+    <svg class="w-6 h-6 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+    </svg>
+  </div>
+</aside>

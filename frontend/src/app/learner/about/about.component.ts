@@ -1,14 +1,16 @@
+import { FooterComponent } from './../footer/footer.component';
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { trigger, transition, style, animate, state } from '@angular/animations';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BrowserModule } from '@angular/platform-browser';
+import { NavbarComponent } from "../navbar/navbar.component";
 
 @Component({
   selector: 'app-about',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, FooterComponent, NavbarComponent],
   animations: [
     trigger('fadeInUp', [
       transition(':enter', [
@@ -26,6 +28,7 @@ import { BrowserModule } from '@angular/platform-browser';
     ])
   ],
   template: `
+  <app-navbar></app-navbar>
     <!-- Modern Banner Section -->
     <section class="relative min-h-[80vh] flex items-center bg-gradient-to-br from-slate-900 via-gray-900 to-slate-900">
       <!-- Animated Background Pattern -->
@@ -286,6 +289,7 @@ import { BrowserModule } from '@angular/platform-browser';
         </div>
       </div>
     </section>
+    <app-footer></app-footer>
   `,
   styles: [`
     @keyframes gradient {

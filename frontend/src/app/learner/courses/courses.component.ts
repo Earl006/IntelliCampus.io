@@ -4,11 +4,13 @@ import { RouterModule } from '@angular/router';
 import { CourseService, Course } from '../../services/course.service';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { FormsModule } from '@angular/forms';
+import { NavbarComponent } from "../navbar/navbar.component";
+import { FooterComponent } from "../footer/footer.component";
 
 @Component({
   selector: 'app-courses',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, NavbarComponent, FooterComponent],
   animations: [
     trigger('fadeIn', [
       transition(':enter', [
@@ -18,6 +20,7 @@ import { FormsModule } from '@angular/forms';
     ])
   ],
   template: `
+  <app-navbar></app-navbar>
     <main class="min-h-screen bg-white">
       <!-- Header Section -->
       <section class="relative py-20">
@@ -229,6 +232,7 @@ import { FormsModule } from '@angular/forms';
         </div>
       </section>
     </main>
+    <app-footer></app-footer>
   `,
   styles: [`
     .line-clamp-2 {

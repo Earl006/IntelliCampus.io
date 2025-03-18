@@ -8,6 +8,8 @@ import { ChatDrawerComponent } from '../../shared/chat-drawer/chat-drawer.compon
 import { catchError, finalize } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { FooterComponent } from "../footer/footer.component";
+import { NavbarComponent } from "../navbar/navbar.component";
 
 interface EnrollmentWithDetails extends Enrollment {
   course: Course;
@@ -17,7 +19,7 @@ interface EnrollmentWithDetails extends Enrollment {
 @Component({
   selector: 'app-my-courses',
   standalone: true,
-  imports: [CommonModule, RouterModule, ChatDrawerComponent],
+  imports: [CommonModule, RouterModule, ChatDrawerComponent, FooterComponent, NavbarComponent],
   templateUrl: './my-courses.component.html',
   styleUrl: './my-courses.component.css'
 })

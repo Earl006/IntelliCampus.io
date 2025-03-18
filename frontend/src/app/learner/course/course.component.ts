@@ -15,11 +15,13 @@ import {
 import { trigger, transition, style, animate } from '@angular/animations';
 import { RouterModule } from '@angular/router';
 import { DatePipe } from '@angular/common';
+import { NavbarComponent } from "../navbar/navbar.component";
+import { FooterComponent } from "../footer/footer.component";
 
 @Component({
   selector: 'app-course',
   standalone: true,
-  imports: [CommonModule, RouterModule, DatePipe],
+  imports: [CommonModule, RouterModule, DatePipe, NavbarComponent, FooterComponent],
   animations: [
     trigger('fadeIn', [
       transition(':enter', [
@@ -29,6 +31,7 @@ import { DatePipe } from '@angular/common';
     ])
   ],
   template: `
+  <app-navbar></app-navbar>
     <main class="min-h-screen bg-white relative">
       <!-- Background with subtle overlay -->
       <div class="absolute inset-0 z-0">
@@ -202,6 +205,7 @@ import { DatePipe } from '@angular/common';
         </div>
       </section>
     </main>
+    <app-footer></app-footer>
   `,
   styles: [`
     .prose {

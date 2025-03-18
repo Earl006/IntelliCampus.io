@@ -5,6 +5,8 @@ import { CourseService, Course } from '../../services/course.service';
 import { CommentReviewService, Review } from '../../services/comment-review.service';
 import { User, UserService } from '../../services/user.service';
 import { firstValueFrom } from 'rxjs';
+import { NavbarComponent } from "../navbar/navbar.component";
+import { FooterComponent } from "../footer/footer.component";
 
 interface ReviewDisplay {
   id: string;
@@ -19,7 +21,7 @@ interface ReviewDisplay {
 @Component({
   selector: 'app-hero',
   standalone: true,
-  imports: [CommonModule, RouterModule, DatePipe],
+  imports: [CommonModule, RouterModule, DatePipe, NavbarComponent, FooterComponent],
   templateUrl: './hero.component.html',
   styleUrls: ['./hero.component.css']
 })

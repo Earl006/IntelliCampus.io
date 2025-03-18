@@ -135,7 +135,41 @@ export class UserService {
     return this.http.post<User>(`${this.apiUrl}/admin/activate/${id}`, {})
       .pipe(catchError(this.handleError));
   }
+  /**
+ * Get detailed information about a student for an instructor
+ * @param studentId The ID of the student
+ */
+getStudentDetailsForInstructor(studentId: string): Observable<any> {
+  return this.http.get<any>(
+    `${this.apiUrl}/instructor/students/${studentId}`, 
+    { headers: this.tokenHeader }
+  ).pipe(catchError(this.handleError));
+}
 
+/**
+ * Get detailed progress information for a specific student in a specific course
+ * @param studentId The ID of the student
+ * @param courseId The ID of the course
+ */
+getStudentProgressInCourse(studentId: string, courseId: string): Observable<any> {
+  return this.http.get<any>(
+    `${this.apiUrl}/instructor/students/${studentId}/courses/${courseId}/progress`,
+    { headers: this.tokenHeader }
+  ).pipe(catchError(this.handleError));
+}
+
+/**
+ * Update the progress percentage for a specific enrollment
+ * @param enrollmentId The ID of the enrollment to update
+ * @param progress The new progress value (0-100)
+ */
+updateStudentProgress(enrollmentId: string, progress: number): Observable<any> {
+  return this.http.put<any>(
+    `${this.apiUrl}/instructor/enrollments/${enrollmentId}/progress`,
+    { progress },
+    { headers: this.headers }
+  ).pipe(catchError(this.handleError));
+}
   private handleError(error: any) {
     let errorMessage = 'An error occurred';
     if (error.error instanceof ErrorEvent) {

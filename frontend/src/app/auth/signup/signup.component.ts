@@ -3,12 +3,14 @@ import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators, A
 import { AuthService } from '../../services/auth.service';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { FooterComponent } from "../../learner/footer/footer.component";
+import { NavbarComponent } from "../../learner/navbar/navbar.component";
 
 @Component({
   selector: 'app-signup',
   templateUrl: './signup.component.html',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule,RouterModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, FooterComponent, NavbarComponent],
   styleUrls: ['./signup.component.css']
 })
 export class SignupComponent {

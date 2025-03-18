@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
 import { io, Socket } from 'socket.io-client';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, catchError, Observable, throwError } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { AuthService } from './auth.service';
 import {jwtDecode} from 'jwt-decode';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 export interface ChatMessage {
   id: string;
@@ -25,7 +26,7 @@ export class ChatService {
   private activeRoomId: string | null = null;
   private activeRoomType: 'course' | 'cohort' | null = null;
 
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService, private http: HttpClient) {}
 
   connect(): void {
     if (this.socket) {
@@ -414,5 +415,38 @@ export class ChatService {
     console.log('Has course_message listeners:', listeners);
   }
 
+
+  /**
+ * Get all messages for an instructor across courses and cohorts
+ * @returns Observable with instructor messages organized by conversation
+ */
+getInstructorMessages(): Observable<any> {
+  const url = `${environment.apiUrl}/chat/instructor/messages`;
+  const token = this.authService.getToken();
+  
+  return this.http.get<any>(url, {
+    headers: new HttpHeaders().set('Authorization', `Bearer ${token}`)
+  }).pipe(catchError(error => {
+    console.error('Error fetching instructor messages:', error);
+    return throwError(() => new Error('Failed to fetch instructor messages'));
+  }));
+}
+
+/**
+ * Mark multiple messages as read
+ * @param messageIds Array of message IDs to mark as read
+ * @returns Observable with confirmation
+ */
+markMessagesAsRead(messageIds: string[]): Observable<any> {
+  const url = `${environment.apiUrl}/chat/instructor/mark-read`;
+  const token = this.authService.getToken();
+  
+  return this.http.post<any>(url, { messageIds }, {
+    headers: new HttpHeaders().set('Authorization', `Bearer ${token}`)
+  }).pipe(catchError(error => {
+    console.error('Error marking messages as read:', error);
+    return throwError(() => new Error('Failed to mark messages as read'));
+  }));
+}
   
 }
