@@ -184,9 +184,13 @@
                                         <div class="flex flex-wrap justify-between">
                                             <h4 class="text-lg font-semibold text-gray-900 line-clamp-2">{{ course.title
                                                 }}</h4>
-                                            <div *ngIf="!course.statistics.isReadyToPublish"
+                                            <div *ngIf="!course.isPublished"
                                                 class="bg-amber-50 text-amber-700 px-3 py-1 rounded-full text-xs font-medium">
                                                 Draft
+                                            </div>
+                                            <div *ngIf="course.isPublished"
+                                                class="bg-green-50 text-green-700 px-3 py-1 rounded-full text-xs font-medium">
+                                                Published
                                             </div>
                                         </div>
 
@@ -244,7 +248,7 @@
                                                 </svg>
                                                 Edit
                                             </a>
-                                            <button *ngIf="!course.statistics.isReadyToPublish"
+                                            <button *ngIf="!course.isPublished && course._count?.materials > 0"
                                                 (click)="publishCourse(course.id, $event)"
                                                 class="text-sm px-3 py-1.5 bg-green-100 text-green-700 rounded-md hover:bg-green-200 flex items-center">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none"

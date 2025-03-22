@@ -1,26 +1,65 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { DashboardService } from '../../services/dashboard.service';
-import { CourseService } from '../../services/course.service';
-import { AuthService } from '../../services/auth.service';
-import { AnnouncementService } from '../../services/announcement.service';
 import { AnalyticsService } from '../../services/analytics.service';
+import { CourseService } from '../../services/course.service';
+import { AnnouncementService } from '../../services/announcement.service';
 
-interface CourseStats {
+// Add proper interfaces to match API response
+interface Enrollment {
   id: string;
-  title: string;
-  bannerImageUrl?: string;
-  description: string;
-  statistics: {
-    totalEnrollments: number;
-    completionRate: number;
-    avgRating: number;
-    revenue: number;
-    isReadyToPublish: boolean;
+  userId: string;
+  courseId: string;
+  enrolledAt: string;
+  progress: number;
+  completed: boolean;
+  cohortId: string;
+  user: {
+    id: string;
+    firstName: string;
+    lastName: string;
   };
+  course: {
+    id: string;
+    title: string;
+  };
+}
+
+interface Review {
+  id: string;
+  courseId: string;
+  userId: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+  user: {
+    id: string;
+    firstName: string;
+    lastName: string;
+  };
+  course: {
+    id: string;
+    title: string;
+  };
+}
+
+// Map these to display formats
+interface DisplayEnrollment {
+  id: string;
+  courseId: string;
+  studentName: string;
+  courseTitle: string;
+  enrolledAt: string;
+}
+
+interface DisplayReview {
+  id: string;
+  courseId: string;
+  studentName: string;
+  courseTitle: string;
+  content: string;
+  rating: number;
+  createdAt: string;
 }
 
 @Component({
@@ -31,13 +70,16 @@ interface CourseStats {
   styleUrls: ['./dashboard.component.css']
 })
 export class DashboardComponent implements OnInit {
+  // Maintain the existing properties
   isLoading = true;
   error: string | null = null;
   dashboardData: any = null;
-  instructorCourses: CourseStats[] = [];
+  instructorCourses: any[] = [];
   recentAnnouncements: any[] = [];
-  recentReviews: any[] = [];
-  recentEnrollments: any[] = [];
+  
+  // Updated properties with proper types
+  recentEnrollments: DisplayEnrollment[] = [];
+  recentReviews: DisplayReview[] = [];
   
   // Calculated metrics
   totalRevenue = 0;
@@ -46,9 +88,7 @@ export class DashboardComponent implements OnInit {
   totalCourses = 0;
   
   constructor(
-    private dashboardService: DashboardService,
     private courseService: CourseService,
-    private authService: AuthService,
     private announcementService: AnnouncementService,
     private analyticsService: AnalyticsService
   ) { }
@@ -59,7 +99,6 @@ export class DashboardComponent implements OnInit {
     this.loadRecentAnnouncements();
   }
 
-  // Update only the loadDashboardData method in your DashboardComponent
   loadDashboardData(): void {
     console.log('Dashboard: Loading dashboard data...');
     this.isLoading = true;
@@ -92,10 +131,29 @@ export class DashboardComponent implements OnInit {
             this.totalCourses = dashboard.courseCount || 0;
             this.avgCompletionRate = dashboard.avgCompletionRate || 0;
             
-            // Get recent activity
+            // Get recent activity and map to display format
             if (dashboard.recentActivity) {
-              this.recentEnrollments = dashboard.recentActivity.enrollments || [];
-              this.recentReviews = dashboard.recentActivity.reviews || [];
+              // Map enrollments to display format
+              this.recentEnrollments = (dashboard.recentActivity.enrollments || [])
+                .map((enrollment: Enrollment) => ({
+                  id: enrollment.id,
+                  courseId: enrollment.courseId,
+                  studentName: enrollment.user ? `${enrollment.user.firstName} ${enrollment.user.lastName}` : 'Student',
+                  courseTitle: enrollment.course ? enrollment.course.title : 'Course',
+                  enrolledAt: enrollment.enrolledAt
+                }));
+              
+              // Map reviews to display format
+              this.recentReviews = (dashboard.recentActivity.reviews || [])
+                .map((review: Review) => ({
+                  id: review.id,
+                  courseId: review.courseId,
+                  studentName: review.user ? `${review.user.firstName} ${review.user.lastName}` : 'Student',
+                  courseTitle: review.course ? review.course.title : 'Course',
+                  content: review.comment || '',  // Map comment to content
+                  rating: review.rating,
+                  createdAt: review.createdAt
+                }));
             }
           } else {
             console.warn('Dashboard: No dashboard data found in response');
@@ -115,11 +173,32 @@ export class DashboardComponent implements OnInit {
     });
   }
   
+  // Existing methods remain unchanged
   loadInstructorCourses(): void {
+    console.log('Loading instructor courses...');
+    
     this.courseService.getInstructorDashboardCourses().subscribe({
       next: (response) => {
-        if (response && response.data) {
-          this.instructorCourses = response.data;
+        if (response && response.data && Array.isArray(response.data)) {
+          // Log the raw isPublished values before any processing
+          response.data.forEach((course: any) => {
+            console.log(`BEFORE: Course ${course.title} isPublished=${course.isPublished} (${typeof course.isPublished})`);
+          });
+          
+          this.instructorCourses = response.data.map((course: any) => {
+            // ONLY focus on the isPublished field - nothing else
+            if (typeof course.isPublished !== 'boolean') {
+              console.warn(`Converting non-boolean isPublished value for ${course.title}`);
+              course.isPublished = Boolean(course.isPublished);
+            }
+            
+            // Log after conversion
+            console.log(`AFTER: Course ${course.title} isPublished=${course.isPublished} (${typeof course.isPublished})`);
+            
+            return course;
+          });
+        } else {
+          console.error('Invalid response format from server:', response);
         }
       },
       error: (err) => {

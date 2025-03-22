@@ -1,3 +1,4 @@
+import { InstructorCoursesComponent } from './instructor/courses/courses.component';
 import { LoginComponent } from './auth/login/login.component';
 import { Routes } from '@angular/router';
 import { SignupComponent } from './auth/signup/signup.component';
@@ -39,11 +40,9 @@ export const routes: Routes = [
         canActivate: [InstructorGuard],
         children: [
             { path: 'dashboard', component: DashboardComponent },
-            // { 
-            //     path: 'courses', 
-            //     loadChildren: () => import('./instructor/courses/courses.routes')
-            //         .then(mod => mod.COURSE_ROUTES)
-            // },
+            { 
+                path: 'courses', component: InstructorCoursesComponent  
+            },
             // { 
             //     path: 'students', 
             //     loadChildren: () => import('./instructor/students/students.routes')

@@ -164,7 +164,7 @@ export class CourseService {
  */
 getInstructorDashboardCourses(): Observable<any> {
   return this.http.get<any>(
-    `${this.apiUrl}/instructor/dashboard`, 
+    `${this.apiUrl}/q/instructor/dashboard`, 
     { headers: this.tokenHeader }
   ).pipe(catchError(this.handleError));
 }
