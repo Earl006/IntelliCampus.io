@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -121,13 +121,14 @@ export class InstructorCoursesComponent implements OnInit {
   
   constructor(
     private courseService: CourseService,
-    private chatService: ChatService
+    private chatService: ChatService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
     this.loadInstructorCourses();
   }
-
+  
   loadInstructorCourses() {
     this.isLoading = true;
     this.error = null;
@@ -266,14 +267,31 @@ export class InstructorCoursesComponent implements OnInit {
   }
   
   openChatForCourse(courseId: string, courseTitle: string, event: Event) {
-    event.preventDefault();
-    event.stopPropagation();
+    // Prevent default behavior to stop any parent elements from handling the click
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
     
+    console.log(`Opening chat for course: ${courseTitle} (${courseId})`);
+    
+    // First ensure we're connected to the socket
+    this.chatService.connect();
+    
+    // Set the UI state variables
     this.activeChatRoom = courseId;
     this.activeChatRoomName = courseTitle;
     this.showChatDrawer = true;
+    
+    // Join the course room with a small delay to ensure connection is ready
+    setTimeout(() => {
+      console.log('Joining course room:', courseId);
+      this.chatService.joinCourseRoom(courseId);
+    }, 100);
+
+    this.cdr.detectChanges();
+
   }
-  
   closeChatDrawer() {
     this.showChatDrawer = false;
   }

@@ -1,0 +1,433 @@
+<!-- Modal Backdrop -->
+<div *ngIf="visible" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" 
+     @fadeIn (click)="closeModal()">
+  
+  <!-- Modal Container -->
+  <div class="bg-white rounded-xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col" 
+       @slideIn (click)="$event.stopPropagation()">
+    
+    <!-- Modal Header with Course Banner -->
+    <div class="relative rounded-t-xl overflow-hidden h-48">
+      <!-- Banner Image with Overlay -->
+      <div class="absolute inset-0 bg-gradient-to-r from-blue-800 to-indigo-800 mix-blend-multiply"></div>
+      <img *ngIf="course.bannerImageUrl" [src]="course.bannerImageUrl" 
+           [alt]="course.title" class="w-full h-full object-cover">
+      <div *ngIf="!course.bannerImageUrl" class="absolute inset-0 bg-gradient-to-r from-blue-700 to-indigo-800"></div>
+      
+      <!-- Close Button -->
+      <button (click)="closeModal()" 
+              class="absolute top-4 right-4 bg-black/30 hover:bg-black/50 text-white rounded-full p-2 transition-colors focus:outline-none focus:ring-2 focus:ring-white/50">
+        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+      
+      <!-- Course Title Area -->
+      <div class="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/70 to-transparent">
+        <div class="flex flex-wrap items-center mb-2 gap-2">
+          <span [class]="'text-xs font-medium px-2.5 py-1 rounded-full ' + getPublishStatusColor()">
+            {{ getPublishStatusText() }}
+          </span>
+          <span [class]="'text-xs font-medium px-2.5 py-1 rounded-full ' + getPriceStatusColor()">
+            {{ getPriceStatusText() }}
+          </span>
+        </div>
+        <h2 class="text-2xl font-bold text-white">{{ course.title }}</h2>
+      </div>
+    </div>
+    
+    <!-- Navigation Tabs -->
+    <div class="bg-white px-6 border-b border-gray-200 flex overflow-x-auto">
+        <button 
+          *ngFor="let tab of tabs"
+          [class]="'flex items-center px-5 py-4 font-medium border-b-2 transition-colors whitespace-nowrap ' + 
+                  (activeTab === tab.id ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300')"
+          (click)="switchTab(tab.id)">
+          <span class="material-icons-outlined text-lg mr-2">{{ tab.icon }}</span>
+          {{ tab.label }}
+          <span *ngIf="tab.id === 'materials'" class="ml-2 bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full text-xs">
+            {{ materials?.length || course._count?.materials || 0 }}
+          </span>
+          <span *ngIf="tab.id === 'students'" class="ml-2 bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full text-xs">
+            {{ course._count?.enrollments || 0 }}
+          </span>
+        </button>
+      </div>
+    
+    <!-- Modal Body with Tab Content -->
+    <div class="overflow-y-auto p-6 flex-grow">
+      <!-- Error Display -->
+      <div *ngIf="error" class="mb-6 bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded-r">
+        <div class="flex items-center">
+          <svg class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <p>{{ error }}</p>
+        </div>
+      </div>
+    
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="flex justify-center py-12">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+      
+      <!-- Details Tab -->
+      <div *ngIf="activeTab === 'details' && !isLoading" class="space-y-8" @fadeIn>
+        <!-- Description Section -->
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900 mb-3">Description</h3>
+          <p class="text-gray-700 whitespace-pre-line">{{ course.description }}</p>
+        </div>
+        
+        <!-- Course Info Section -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Course Details -->
+          <div class="bg-gray-50 p-5 rounded-lg border border-gray-200">
+            <h4 class="text-sm font-medium text-gray-500 uppercase mb-4">Course Information</h4>
+            <dl class="space-y-3">
+              <div class="flex justify-between">
+                <dt class="text-gray-600">Created</dt>
+                <dd class="font-medium text-gray-900">{{ getFormattedDate(course.createdAt) }}</dd>
+              </div>
+              <div class="flex justify-between">
+                <dt class="text-gray-600">Last Updated</dt>
+                <dd class="font-medium text-gray-900">{{ getFormattedDate(course.updatedAt) }}</dd>
+              </div>
+              <div class="flex justify-between">
+                <dt class="text-gray-600">Materials</dt>
+                <dd class="font-medium text-gray-900">{{ materials?.length || course._count?.materials || 0 }}</dd>
+              </div>
+              <div class="flex justify-between">
+                <dt class="text-gray-600">Price</dt>
+                <dd class="font-medium text-gray-900">
+                  {{ course.isPaid ? ('KES ' + course.price) : 'Free' }}
+                </dd>
+              </div>
+              <div *ngIf="course.instructor" class="flex justify-between">
+                <dt class="text-gray-600">Instructor</dt>
+                <dd class="font-medium text-gray-900">
+                  {{ course.instructor.firstName }} {{ course.instructor.lastName }}
+                </dd>
+              </div>
+            </dl>
+          </div>
+          
+          <!-- Course Statistics -->
+          <div class="bg-gray-50 p-5 rounded-lg border border-gray-200">
+            <h4 class="text-sm font-medium text-gray-500 uppercase mb-4">Performance Statistics</h4>
+            <dl class="space-y-3">
+              <div class="flex justify-between">
+                <dt class="text-gray-600">Enrollments</dt>
+                <dd class="font-medium text-gray-900">{{ course._count?.enrollments || 0 }}</dd>
+              </div>
+              <div *ngIf="course.statistics" class="flex justify-between">
+                <dt class="text-gray-600">Completion Rate</dt>
+                <dd class="font-medium text-gray-900">{{ (course.statistics.completionRate * 100).toFixed(1) }}%</dd>
+              </div>
+              <div *ngIf="course.statistics" class="flex justify-between">
+                <dt class="text-gray-600">Average Rating</dt>
+                <dd class="font-medium text-gray-900 flex items-center">
+                  {{ course.statistics.avgRating.toFixed(1) }}
+                  <svg class="w-4 h-4 text-yellow-400 ml-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118l-2.799-2.034c-.784-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                  </svg>
+                </dd>
+              </div>
+              <div *ngIf="course.statistics" class="flex justify-between">
+                <dt class="text-gray-600">Reviews</dt>
+                <dd class="font-medium text-gray-900">{{ course._count?.reviews || 0 }}</dd>
+              </div>
+              <div *ngIf="course.statistics" class="flex justify-between">
+                <dt class="text-gray-600">Average Progress</dt>
+                <dd class="font-medium text-gray-900">{{ (course.statistics.avgProgress * 100).toFixed(1) }}%</dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+        
+        <!-- Categories Section -->
+        <div *ngIf="course.categories && course.categories.length > 0">
+          <h3 class="text-lg font-semibold text-gray-900 mb-3">Categories</h3>
+          <div class="flex flex-wrap gap-2">
+            <span *ngFor="let category of course.categories" 
+                  class="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm">
+              {{ category.name }}
+            </span>
+            <span *ngFor="let subCategory of course.subCategories" 
+                  class="px-3 py-1 bg-indigo-50 text-indigo-700 rounded-full text-sm">
+              {{ subCategory.name }}
+            </span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Materials Tab -->
+      <div *ngIf="activeTab === 'materials' && !isLoading" @fadeIn>
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="text-lg font-semibold text-gray-900">Course Materials</h3>
+          <button (click)="navigateToMaterialEditor()" 
+                  class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center shadow-sm">
+            <svg class="w-5 h-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            Add Material
+          </button>
+        </div>
+        
+        <!-- Empty State -->
+        <div *ngIf="!materials || materials.length === 0" class="text-center py-16 bg-gray-50 rounded-lg border border-gray-200">
+          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" 
+                  d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+          </svg>
+          <h3 class="mt-2 text-base font-medium text-gray-900">No materials yet</h3>
+          <p class="mt-1 text-sm text-gray-500">Start by adding your first course material.</p>
+          <div class="mt-6">
+            <button (click)="navigateToMaterialEditor()" 
+                    class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+              Add Material
+            </button>
+          </div>
+        </div>
+        
+        <!-- Materials List -->
+        <div *ngIf="materials && materials.length > 0" class="space-y-4">
+          <!-- Materials with consistent layout -->
+          <div *ngFor="let material of materials; let i = index" 
+              class="flex items-start p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors group cursor-pointer mb-3"
+              (click)="viewMaterialDetails(material)">
+            <!-- Material Order Circle -->
+            <div class="flex-shrink-0 w-10 h-10 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center mr-4">
+              {{ i + 1 }}
+            </div>
+            
+            <!-- Material Info -->
+            <div class="flex-grow">
+              <div class="flex items-center flex-wrap gap-2">
+                <span class="material-icons-outlined text-gray-500 mr-1">{{ getTypeIcon(material.type) }}</span>
+                <h4 class="font-medium text-gray-900">{{ material.title }}</h4>
+                <span [class]="'ml-2 px-2 py-0.5 rounded-full text-xs ' + getMaterialTypeColor(material.type)">
+                  {{ getTypeLabel(material.type) }}
+                </span>
+              </div>
+              
+              <div class="flex items-center mt-1 text-sm text-gray-500 flex-wrap gap-x-4 gap-y-1">
+                <span>Last updated: {{ getFormattedDate(material.updatedAt) }}</span>
+                <span *ngIf="material.duration" class="flex items-center">
+                  <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  {{ material.duration }} minutes
+                </span>
+              </div>
+            </div>
+            
+            <!-- Material Actions -->
+            <div class="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity flex space-x-1">
+              <button (click)="navigateToMaterialEditor(material.id); $event.stopPropagation();" 
+                      class="p-2 text-gray-600 hover:text-blue-600 transition-colors hover:bg-blue-50 rounded-full">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                        d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                </svg>
+              </button>
+              <button (click)="startMaterialDeleteConfirmation(material.id, $event)" 
+                      class="p-2 text-gray-600 hover:text-red-600 transition-colors hover:bg-red-50 rounded-full">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Students Tab -->
+      <div *ngIf="activeTab === 'students' && !isLoading" @fadeIn>
+        <h3 class="text-lg font-semibold text-gray-900 mb-6">Enrolled Students</h3>
+        
+        <!-- Students placeholder -->
+        <div class="text-center py-16 bg-gray-50 rounded-lg border border-gray-200">
+          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" 
+                  d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
+          </svg>
+          <h3 class="mt-2 text-base font-medium text-gray-900">
+            {{ course._count?.enrollments ? course._count?.enrollments + ' students enrolled' : 'No students enrolled yet' }}
+          </h3>
+          <p class="mt-1 text-sm text-gray-500">
+            {{ course._count?.enrollments ? 'Detailed student information will appear here.' : 'When students enroll, they will appear here.' }}
+          </p>
+        </div>
+      </div>
+      
+      <!-- Analytics Tab -->
+      <div *ngIf="activeTab === 'analytics' && !isLoading" @fadeIn>
+        <h3 class="text-lg font-semibold text-gray-900 mb-6">Course Analytics</h3>
+        
+        <!-- Analytics placeholder -->
+        <div class="text-center py-16 bg-gray-50 rounded-lg border border-gray-200">
+          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" 
+                  d="M7.5 14.25v2.25m3-4.5v4.5m3-6.75v6.75m3-9v9M6 20.25h12A2.25 2.25 0 0020.25 18V6A2.25 2.25 0 0018 3.75H6A2.25 2.25 0 003.75 6v12A2.25 2.25 0 006 20.25z" />
+          </svg>
+          <h3 class="mt-2 text-base font-medium text-gray-900">Analytics Dashboard</h3>
+          <p class="mt-1 text-sm text-gray-500">Detailed course analytics will be displayed here.</p>
+        </div>
+      </div>
+      
+      <!-- Material Detail Modal -->
+      <div *ngIf="showMaterialDetails && selectedMaterial" 
+           class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-60"
+           @fadeIn (click)="closeMaterialDetails()">
+        <div class="bg-white rounded-lg shadow-xl p-6 max-w-2xl w-full m-4" 
+             @slideUp (click)="$event.stopPropagation()">
+          <div class="flex justify-between items-start mb-4">
+            <div>
+              <div class="flex items-center gap-2 mb-1">
+                <span class="material-icons-outlined text-gray-600">{{ getTypeIcon(selectedMaterial.type) }}</span>
+                <span [class]="'text-xs font-medium px-2 py-1 rounded-full ' + getMaterialTypeColor(selectedMaterial.type)">
+                  {{ getTypeLabel(selectedMaterial.type) }}
+                </span>
+              </div>
+              <h3 class="text-xl font-semibold text-gray-900">{{ selectedMaterial.title }}</h3>
+            </div>
+            <button (click)="closeMaterialDetails()" class="text-gray-400 hover:text-gray-600">
+              <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          
+          <div class="border-t border-b border-gray-200 py-4 my-4">
+            <div class="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <p class="text-gray-500">Last Updated</p>
+                <p class="font-medium">{{ getFormattedDate(selectedMaterial.updatedAt) }}</p>
+              </div>
+              <div *ngIf="selectedMaterial.duration">
+                <p class="text-gray-500">Duration</p>
+                <p class="font-medium">{{ selectedMaterial.duration }} minutes</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Content Preview -->
+          <div *ngIf="selectedMaterial.content" class="mb-4">
+            <h4 class="font-medium text-gray-800 mb-2">Content Preview:</h4>
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 max-h-40 overflow-y-auto">
+              <p class="text-gray-700 whitespace-pre-line text-sm">{{ selectedMaterial.content }}</p>
+            </div>
+          </div>
+          
+          <!-- File URL -->
+          <div *ngIf="selectedMaterial.fileUrl" class="mb-6">
+            <h4 class="font-medium text-gray-800 mb-2">Associated File:</h4>
+            <div class="flex items-center bg-blue-50 p-3 rounded-lg">
+              <span class="material-icons-outlined text-blue-600 mr-2">attach_file</span>
+              <a [href]="selectedMaterial.fileUrl" target="_blank" class="text-blue-600 hover:underline truncate">
+                {{ selectedMaterial.fileUrl.split('/').pop() || 'View File' }}
+              </a>
+            </div>
+          </div>
+          
+          <div class="flex justify-end gap-3 mt-6">
+            <button (click)="navigateToMaterialEditor(selectedMaterial.id); closeMaterialDetails()" 
+                    class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+              Edit Material
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Course Delete Confirmation Dialog -->
+      <div *ngIf="confirmingDelete" class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-60">
+        <div class="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4" @fadeIn (click)="$event.stopPropagation()">
+          <div class="text-center">
+            <svg class="mx-auto h-12 w-12 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <h3 class="mt-4 text-lg font-medium text-gray-900">Delete Course</h3>
+            <p class="mt-2 text-sm text-gray-500">
+              Are you sure you want to delete this course? This action cannot be undone.
+              All course materials, enrollments, and student data will be permanently deleted.
+            </p>
+          </div>
+          <div class="mt-6 flex justify-end gap-3">
+            <button (click)="cancelDelete()" 
+                    class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
+              Cancel
+            </button>
+            <button (click)="confirmDelete()" 
+                    class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+              Delete Course
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Material Delete Confirmation Dialog -->
+      <div *ngIf="confirmingMaterialDelete" class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-60">
+        <div class="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4" @fadeIn (click)="$event.stopPropagation()">
+          <div class="text-center">
+            <svg class="mx-auto h-12 w-12 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <h3 class="mt-4 text-lg font-medium text-gray-900">Delete Material</h3>
+            <p class="mt-2 text-sm text-gray-500">
+              Are you sure you want to delete this material? This action cannot be undone.
+              Any student progress associated with this material will be lost.
+            </p>
+          </div>
+          <div class="mt-6 flex justify-end gap-3">
+            <button (click)="cancelMaterialDelete()" 
+                    class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
+              Cancel
+            </button>
+            <button (click)="confirmMaterialDelete()" 
+                    [disabled]="materialActionLoading"
+                    class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center">
+              <span *ngIf="materialActionLoading" class="mr-2">
+                <svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              </span>
+              Delete Material
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Modal Footer with Action Buttons -->
+    <div class="bg-gray-50 px-6 py-4 border-t border-gray-200 rounded-b-xl flex justify-between items-center">
+      <!-- Left side: Status Info -->
+      <div class="text-sm text-gray-500">
+        <span *ngIf="course.isPublished">
+          Published on {{ getFormattedDate(course.updatedAt) }}
+        </span>
+        <span *ngIf="!course.isPublished">
+          Draft • Last edited {{ getFormattedDate(course.updatedAt) }}
+        </span>
+      </div>
+      
+      <!-- Right side: Action Buttons -->
+      <div class="flex space-x-3">
+        <button (click)="startDeleteConfirmation()" 
+                class="px-4 py-2 border border-red-300 text-red-700 rounded-lg hover:bg-red-50 transition-colors">
+          Delete
+        </button>
+        <button (click)="editCourse()" 
+                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm">
+          Edit Course
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

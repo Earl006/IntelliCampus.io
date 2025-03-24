@@ -72,7 +72,13 @@ export class CourseService {
   private token = localStorage.getItem('token');
   private tokenHeader = new HttpHeaders().set('Authorization', `Bearer ${this.token}`);
   constructor(private http: HttpClient) { }
-
+  private getAuthHeaders(): HttpHeaders {
+    const token = localStorage.getItem('token');
+    return new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    });
+  }  
   // Course CRUD Operations
   getCourses(): Observable<ApiResponse<Course[]>> {
     return this.http.get<ApiResponse<Course[]>>(this.apiUrl)
@@ -165,7 +171,7 @@ export class CourseService {
 getInstructorDashboardCourses(): Observable<any> {
   return this.http.get<any>(
     `${this.apiUrl}/q/instructor/dashboard`, 
-    { headers: this.tokenHeader }
+    { headers: this.getAuthHeaders() }
   ).pipe(catchError(this.handleError));
 }
 

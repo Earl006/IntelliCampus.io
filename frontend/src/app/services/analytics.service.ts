@@ -23,7 +23,7 @@ export class AnalyticsService {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`
     });
-  }
+  }  
 
   /**
    * Get instructor dashboard overview data

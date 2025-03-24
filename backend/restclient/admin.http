@@ -39,7 +39,7 @@
 
 # ### Manage category
 # POST {{baseUrl}}/categories
-# Authorization: Bearer {{authToken}}
+# Authorization: Bearer {{authToken}} 
 # Content-Type: application/json
 
 # {

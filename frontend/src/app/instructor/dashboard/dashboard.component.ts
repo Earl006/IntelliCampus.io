@@ -4,6 +4,8 @@ import { RouterModule } from '@angular/router';
 import { AnalyticsService } from '../../services/analytics.service';
 import { CourseService } from '../../services/course.service';
 import { AnnouncementService } from '../../services/announcement.service';
+import { CourseFormComponent } from '../course-form/course-form.component';
+import { CourseComponent } from '../course/course.component'; // Import CourseComponent
 
 // Add proper interfaces to match API response
 interface Enrollment {
@@ -65,7 +67,7 @@ interface DisplayReview {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, CourseFormComponent, CourseComponent], // Add CourseComponent to imports
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css']
 })
@@ -87,6 +89,14 @@ export class DashboardComponent implements OnInit {
   avgCompletionRate = 0;
   totalCourses = 0;
   
+  // Add these properties for the course form modal
+  showCourseFormModal = false;
+  selectedCourse: any = null;
+  
+  // Add new properties for the course modal
+  showCourseModal = false;
+  selectedViewCourse: any = null;
+  
   constructor(
     private courseService: CourseService,
     private announcementService: AnnouncementService,
@@ -94,8 +104,8 @@ export class DashboardComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.loadDashboardData();
     this.loadInstructorCourses();
+    this.loadDashboardData();
     this.loadRecentAnnouncements();
   }
 
@@ -257,5 +267,111 @@ export class DashboardComponent implements OnInit {
         alert(err.error?.message || 'Failed to publish course. Ensure all requirements are met.');
       }
     });
+  }
+  
+  // Add these methods for modal control
+  openNewCourseForm(event?: Event): void {
+    // Prevent default navigation for anchor tags
+    if (event) {
+      event.preventDefault();
+    }
+    
+    // Reset selected course (create mode)
+    this.selectedCourse = null;
+    
+    // Show the modal
+    this.showCourseFormModal = true;
+    console.log('Opening new course form modal');
+  }
+  
+  openEditCourseForm(course: any, event: Event): void {
+    event.preventDefault();
+    
+    // Set course for editing
+    this.selectedCourse = course;
+    
+    // Show the modal
+    this.showCourseFormModal = true;
+    console.log('Opening edit course form modal for:', course.title);
+  }
+  
+  closeCourseForm(): void {
+    this.showCourseFormModal = false;
+    console.log('Course form modal closed');
+  }
+  
+  onCourseSaved(courseData: any): void {
+    console.log('Course saved:', courseData);
+    
+    // Refresh course lists
+    this.loadInstructorCourses();
+    this.loadDashboardData();
+    
+    // Show success message
+    // This could be improved with a toast/notification system
+    alert('Course successfully ' + (this.selectedCourse ? 'updated' : 'created'));
+  }
+  
+  // Add new methods for course modal
+  viewCourse(course: any, event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    // Load the complete course with all details
+    this.courseService.getCourseById(course.id).subscribe({
+      next: (response) => {
+        if (response && response.data) {
+          this.selectedViewCourse = response.data;
+          this.showCourseModal = true;
+          console.log('Opening course view modal for:', this.selectedViewCourse.title);
+        } else {
+          console.error('Invalid course data returned:', response);
+        }
+      },
+      error: (err) => {
+        console.error('Failed to load course details', err);
+        alert('Failed to load course details');
+      }
+    });
+  }
+  
+  closeCourseModal(): void {
+    this.showCourseModal = false;
+    this.selectedViewCourse = null;
+    console.log('Course view modal closed');
+  }
+  
+  editCourseFromModal(course: any): void {
+    // Close the view modal
+    this.showCourseModal = false;
+    
+    // Open the edit form modal with the course data
+    this.selectedCourse = course;
+    this.showCourseFormModal = true;
+    console.log('Opening edit form from course modal for:', course.title);
+  }
+  
+  deleteCourseFromModal(courseId: string): void {
+    console.log('Deleting course from modal:', courseId);
+    
+    if (confirm('Are you sure you want to delete this course? This action cannot be undone.')) {
+      this.courseService.deleteCourse(courseId).subscribe({
+        next: () => {
+          // Close the modal
+          this.showCourseModal = false;
+          
+          // Refresh course lists
+          this.loadInstructorCourses();
+          this.loadDashboardData();
+          
+          // Show success message
+          alert('Course deleted successfully');
+        },
+        error: (err) => {
+          console.error('Failed to delete course', err);
+          alert('Failed to delete course: ' + (err.error?.message || 'Unknown error'));
+        }
+      });
+    }
   }
 }
