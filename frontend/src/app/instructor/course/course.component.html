@@ -46,7 +46,7 @@
           <span class="material-icons-outlined text-lg mr-2">{{ tab.icon }}</span>
           {{ tab.label }}
           <span *ngIf="tab.id === 'materials'" class="ml-2 bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full text-xs">
-            {{ materials?.length || course._count?.materials || 0 }}
+            {{ materials.length || course._count?.materials || 0 }}
           </span>
           <span *ngIf="tab.id === 'students'" class="ml-2 bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full text-xs">
             {{ course._count?.enrollments || 0 }}
@@ -96,7 +96,7 @@
               </div>
               <div class="flex justify-between">
                 <dt class="text-gray-600">Materials</dt>
-                <dd class="font-medium text-gray-900">{{ materials?.length || course._count?.materials || 0 }}</dd>
+                <dd class="font-medium text-gray-900">{{ materials.length || course._count?.materials || 0 }}</dd>
               </div>
               <div class="flex justify-between">
                 <dt class="text-gray-600">Price</dt>

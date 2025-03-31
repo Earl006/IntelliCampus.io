@@ -1,0 +1,70 @@
+/* Fix the duplicate CSS rules and add proper z-index stacking */
+
+/* Base pointer event fixes */
+button, a {
+  pointer-events: auto !important;
+}
+
+/* Container styles */
+.container {
+  position: relative;
+  z-index: 10;
+}
+
+/* Modal containers with proper z-index stacking */
+.course-view-container {
+  position: relative;
+  z-index: 1000;
+}
+
+.course-form-container {
+  position: relative;
+  z-index: 2000; /* Higher than course view */
+}
+
+/* Modal visibility control */
+.pointer-events-none {
+  pointer-events: none !important;
+}
+
+/* Make the component contents clickable */
+app-course, app-course-form {
+  pointer-events: auto;
+}
+
+/* Animation for modal appearance */
+.animate-modal-appear {
+  animation: modal-appear 0.3s ease-out forwards;
+}
+
+@keyframes modal-appear {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Add this to your existing CSS */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.3s ease-out;
+}
+
+/* Chat drawer should have higher z-index than both modals */
+app-chat-drawer {
+  z-index: 3000 !important; /* Ensure it's above both modals */
+}

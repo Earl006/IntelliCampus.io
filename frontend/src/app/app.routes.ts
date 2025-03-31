@@ -1,4 +1,3 @@
-import { InstructorCoursesComponent } from './instructor/courses/courses.component';
 import { LoginComponent } from './auth/login/login.component';
 import { Routes } from '@angular/router';
 import { SignupComponent } from './auth/signup/signup.component';
@@ -13,6 +12,7 @@ import { MyCoursesComponent } from './learner/my-courses/my-courses.component';
 import { DashboardComponent } from './instructor/dashboard/dashboard.component';
 import { InstructorGuard } from './guards/instructor.guard';
 import { InstructorLayoutComponent } from './instructor/layout/layout.component';
+import { InstructorCoursesComponent } from './instructor/instructor-courses/instructor-courses.component';
 
 export const routes: Routes = [
     {path:'', component: HeroComponent},
