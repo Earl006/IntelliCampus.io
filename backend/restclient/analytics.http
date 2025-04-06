@@ -1,58 +1,58 @@
-# @baseUrl = http://localhost:3000/api
-# @token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ1YWM0OWViLWJiMmMtNDMyZS1iMDk0LTMyZjFkYTZkYmYzNiIsImVtYWlsIjoiZWFybGpvZTA2QG91dGxvb2suY29tIiwiZmlyc3ROYW1lIjoiRWFybGpvZSIsImxhc3ROYW1lIjoiS2FkaW1hIiwicGhvbmVOdW1iZXIiOiIwNzExMjI0NTg1MyIsInJvbGUiOiJJTlNUUlVDVE9SIiwiaWF0IjoxNzQyNjQwMzM5LCJleHAiOjE3NDI2NDM5Mzl9.S5cADttCfWx9es-etQ4g6oOwYDPmf_k7JZ_3DaOCbGQ
+@baseUrl = http://localhost:3000/api
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ1YWM0OWViLWJiMmMtNDMyZS1iMDk0LTMyZjFkYTZkYmYzNiIsImVtYWlsIjoiZWFybGpvZTA2QG91dGxvb2suY29tIiwiZmlyc3ROYW1lIjoiRWFybGpvZSIsImxhc3ROYW1lIjoiS2FkaW1hIiwicGhvbmVOdW1iZXIiOiIwNzExMjI0NTg1MyIsInJvbGUiOiJJTlNUUlVDVE9SIiwiaWF0IjoxNzQyNjQwMzM5LCJleHAiOjE3NDI2NDM5Mzl9.S5cADttCfWx9es-etQ4g6oOwYDPmf_k7JZ_3DaOCbGQ
 
-# ### Environment Setup - Login as instructor to get JWT token
-# # @name login
-# POST {{baseUrl}}/auth/login
-# Content-Type: application/json
+### Environment Setup - Login as instructor to get JWT token
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
 
-# {
-#   "email": "earljoe06@outlook.com", 
-#   "password": "password"
-# }
+{
+  "email": "earljoe06@outlook.com", 
+  "password": "password"
+}
 
-# ### Get Instructor Dashboard Overview
-# # Returns key metrics and data for the instructor dashboard
-# GET {{baseUrl}}/analytics/dashboard
-# Authorization: Bearer {{token}}
+### Get Instructor Dashboard Overview
+# Returns key metrics and data for the instructor dashboard
+GET {{baseUrl}}/analytics/dashboard
+Authorization: Bearer {{token}}
 
-# ### Get Revenue Statistics - Monthly (Default)
-# # Returns revenue data with monthly breakdown
-# GET {{baseUrl}}/analytics/revenue
-# Authorization: Bearer {{token}}
+### Get Revenue Statistics - Monthly (Default)
+# Returns revenue data with monthly breakdown
+GET {{baseUrl}}/analytics/revenue
+Authorization: Bearer {{token}}
 
-# ### Get Revenue Statistics - Weekly
-# # Returns revenue data with weekly breakdown
-# GET {{baseUrl}}/analytics/revenue?period=week
-# Authorization: Bearer {{token}}
+### Get Revenue Statistics - Weekly
+# Returns revenue data with weekly breakdown
+GET {{baseUrl}}/analytics/revenue?period=week
+Authorization: Bearer {{token}}
 
-# ### Get Revenue Statistics - Quarterly
-# # Returns revenue data with quarterly breakdown
-# GET {{baseUrl}}/analytics/revenue?period=quarter
-# Authorization: Bearer {{token}}
+### Get Revenue Statistics - Quarterly
+# Returns revenue data with quarterly breakdown
+GET {{baseUrl}}/analytics/revenue?period=quarter
+Authorization: Bearer {{token}}
 
-# ### Get Revenue Statistics - Yearly
-# # Returns revenue data with yearly breakdown
-# GET {{baseUrl}}/analytics/revenue?period=year
-# Authorization: Bearer {{token}}
+### Get Revenue Statistics - Yearly
+# Returns revenue data with yearly breakdown
+GET {{baseUrl}}/analytics/revenue?period=year
+Authorization: Bearer {{token}}
 
-# ### Get Course Engagement Data
-# # Replace {courseId} with an actual course ID
-# # Returns detailed engagement metrics for a specific course
-# GET {{baseUrl}}/analytics/courses/92976e55-7da0-4e6a-a2b6-ae4bf8865446/engagement
-# Authorization: Bearer {{token}}
+### Get Course Engagement Data
+# Replace {courseId} with an actual course ID
+# Returns detailed engagement metrics for a specific course
+GET {{baseUrl}}/analytics/courses/92976e55-7da0-4e6a-a2b6-ae4bf8865446/engagement
+Authorization: Bearer {{token}}
 
-# ### Get Combined Instructor Analytics
-# # Returns both dashboard and revenue data in a single response
-# GET {{baseUrl}}/analytics/instructor
-# Authorization: Bearer {{token}}
+### Get Combined Instructor Analytics
+# Returns both dashboard and revenue data in a single response
+GET {{baseUrl}}/analytics/instructor
+Authorization: Bearer {{token}}
 
-# ### Get Course Engagement for Specific Course (Example with real ID)
-# # This is an example with a placeholder ID - replace with real ID from your database
-# GET {{baseUrl}}/analytics/courses/4f5a7b6c-8d9e-0f1a-2b3c-4d5e6f7a8b9c/engagement
-# Authorization: Bearer {{token}}
+### Get Course Engagement for Specific Course (Example with real ID)
+# This is an example with a placeholder ID - replace with real ID from your database
+GET {{baseUrl}}/analytics/courses/4f5a7b6c-8d9e-0f1a-2b3c-4d5e6f7a8b9c/engagement
+Authorization: Bearer {{token}}
 
-# ### Get Revenue Statistics with Custom Range
-# # You can add custom date range parameters if your API supports them
-# GET {{baseUrl}}/analytics/revenue?period=custom&start=2023-01-01&end=2023-12-31
-# Authorization: Bearer {{token}}
+### Get Revenue Statistics with Custom Range
+# You can add custom date range parameters if your API supports them
+GET {{baseUrl}}/analytics/revenue?period=custom&start=2023-01-01&end=2023-12-31
+Authorization: Bearer {{token}}
