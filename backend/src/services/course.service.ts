@@ -102,15 +102,17 @@ export default class CourseService {
     courseId: string,
     data: Partial<Course> & {
       subCategoryIds?: string[];
+      categoryIds?: string[]; // Add this to properly type the incoming data
     }
   ) {
-
     const existingCourse = await this.prisma.course.findUnique({
       where: { id: courseId },
     });
     if (!existingCourse) {
       throw new Error('Course not found');
     }
+  
+    // Handle sub-categories connect/disconnect
     let subCatsConnect, subCatsDisconnect;
     if (data.subCategoryIds) {
       const existing = await this.prisma.course.findUnique({
@@ -125,25 +127,73 @@ export default class CourseService {
         .filter((eid) => !data.subCategoryIds?.includes(eid))
         .map((eid) => ({ id: eid }));
     }
-
-    const { subCategoryIds, ...rest } = data;
+  
+    // Handle categories connect/disconnect
+    let catsConnect, catsDisconnect;
+    if (data.categoryIds) {
+      const existing = await this.prisma.course.findUnique({
+        where: { id: courseId },
+        select: { categories: true },
+      });
+      const existingIds = (existing?.categories || []).map((c) => c.id);
+      catsConnect = data.categoryIds
+        .filter((cid) => !existingIds.includes(cid))
+        .map((cid) => ({ id: cid }));
+      catsDisconnect = existingIds
+        .filter((eid) => !data.categoryIds?.includes(eid))
+        .map((eid) => ({ id: eid }));
+    }
+  
+    // Remove categoryIds and subCategoryIds from rest to avoid Prisma errors
+    const { subCategoryIds, categoryIds, ...rest } = data;
+    
     return this.prisma.course.update({
       where: { id: courseId },
       data: {
         ...rest,
-        subCategories:
-          data.subCategoryIds !== undefined
-            ? {
-                connect: subCatsConnect,
-                disconnect: subCatsDisconnect,
-              }
-            : undefined,
+        // Add categories handling if categoryIds is provided
+        categories: data.categoryIds !== undefined
+          ? {
+              connect: catsConnect,
+              disconnect: catsDisconnect,
+            }
+          : undefined,
+        subCategories: data.subCategoryIds !== undefined
+          ? {
+              connect: subCatsConnect,
+              disconnect: subCatsDisconnect,
+            }
+          : undefined,
       },
     });
   }
 
   async deleteCourse(courseId: string) {
-    // Cascade deletes chatRooms, enrollments, etc. as configured in schema
+    // Delete chat messages in course chat rooms first
+    await this.prisma.chatMessage.deleteMany({
+      where: {
+        courseChatRoomId: {
+          in: await this.prisma.courseChatRoom
+            .findMany({
+              where: { courseId },
+              select: { id: true }
+            })
+            .then(rooms => rooms.map(r => r.id))
+        }
+      }
+    });
+    
+    // Delete related records in order
+    await this.prisma.courseChatRoom.deleteMany({ where: { courseId } });
+    await this.prisma.enrollment.deleteMany({ where: { courseId } });
+    await this.prisma.cohort.deleteMany({ where: { courseId } });
+    await this.prisma.review.deleteMany({ where: { courseId } });
+    await this.prisma.courseMaterial.deleteMany({ where: { courseId } });
+    await this.prisma.assessment.deleteMany({ where: { courseId } });
+    await this.prisma.announcement.deleteMany({ where: { courseId } });
+    await this.prisma.certificate.deleteMany({ where: { courseId } });
+    
+    // Finally delete the course
     return this.prisma.course.delete({ where: { id: courseId } });
   }
 

@@ -78,7 +78,15 @@ export class CourseService {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`
     });
-  }  
+  }
+  
+  private getAuthHeadersForFormData(): HttpHeaders {
+    const token = localStorage.getItem('token');
+    return new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+    // Note: Do NOT set Content-Type here - let Angular set it automatically for FormData
+  } 
   // Course CRUD Operations
   getCourses(): Observable<ApiResponse<Course[]>> {
     return this.http.get<ApiResponse<Course[]>>(this.apiUrl)
@@ -101,17 +109,17 @@ export class CourseService {
   }
 
   createCourse(formData: FormData): Observable<Course> {
-    return this.http.post<Course>(this.apiUrl, formData)
+    return this.http.post<Course>(this.apiUrl, formData, { headers: this.getAuthHeadersForFormData() })
       .pipe(catchError(this.handleError));
   }
 
   updateCourse(id: string, formData: FormData): Observable<Course> {
-    return this.http.put<Course>(`${this.apiUrl}/${id}`, formData)
+    return this.http.put<Course>(`${this.apiUrl}/${id}`, formData, {headers: this.getAuthHeadersForFormData()})
       .pipe(catchError(this.handleError));
   }
 
   deleteCourse(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`)
+    return this.http.delete<void>(`${this.apiUrl}/${id}`, {headers: this.getAuthHeaders()})
       .pipe(catchError(this.handleError));
   }
 

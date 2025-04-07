@@ -187,7 +187,17 @@ export class CourseComponent implements OnInit {
   }
   
   confirmDelete(): void {
-    this.delete.emit(this.course.id);
+    // this.delete.emit(this.course.id);
+    this.courseService.deleteCourse(this.course.id).subscribe({
+      next: () => {
+        this.delete.emit(this.course.id);
+        window.location.reload()
+      },
+      error: (err) => {
+        this.error = 'Failed to delete course';
+        console.error('Error deleting course:', err);
+      }
+    });
     this.closeModal();
   }
   
